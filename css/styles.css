@@ -1,0 +1,549 @@
+/* =========================================================
+   FIRST EXPERTS LOGISTICS — DESIGN SYSTEM
+   Tokens → Base → Layout → Components → Motion → Utilities
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,340;0,9..144,400;0,9..144,480;0,9..144,600;1,9..144,420;1,9..144,500&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root{
+  /* ---- Color: sampled from the FE mark (#014BAE) ---- */
+  --color-ink:        #0A1221;   /* primary text / darkest surface */
+  --color-night:       #0A2A5E;  /* deep navy section background */
+  --color-night-2:     #0E3572;  /* secondary navy, for gradients */
+  --color-brand:       #014BAE; /* FE blue, exact logo value */
+  --color-brand-light: #2E6FD9;
+  --color-surface:     #F4F5F1; /* paper / off-white */
+  --color-surface-alt: #EAEBE5; /* alternate section tone */
+  --color-muted:       #5B6472;
+  --color-muted-on-dark: #93A0B8;
+  --color-line:        rgba(10,18,33,.12);
+  --color-line-on-dark: rgba(255,255,255,.14);
+  --color-amber:       #E6A23C; /* runway / beacon accent — used sparingly */
+
+  /* ---- Type ----
+     One distinctive serif family carries the whole site — display AND
+     body — rather than pairing it with a "normal" sans-serif. Fraunces is
+     built with an optical-size axis specifically so the same family can go
+     from huge cinematic headlines down to small body copy and adjust its
+     own contrast/weight automatically, so it stays readable instead of
+     turning into a novelty font at small sizes. IBM Plex Mono is the one
+     deliberate exception, for anything that reads as data (route codes,
+     stats, labels) — a two-family system, not six. */
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-body:    'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-mono:    'IBM Plex Mono', ui-monospace, monospace;
+
+  /* ---- Layout ---- */
+  --container: 1280px;
+  --gutter: clamp(20px, 5vw, 64px);
+  --radius-sm: 3px;
+  --radius-md: 6px;
+
+  /* ---- Motion ---- */
+  --ease-out: cubic-bezier(.16,.84,.44,1);
+  --ease-in-out: cubic-bezier(.65,0,.35,1);
+  --dur-fast: 180ms;
+  --dur-med: 420ms;
+  --dur-slow: 900ms;
+}
+
+*,*::before,*::after{ box-sizing:border-box; }
+/* Removes the ~300ms double-tap delay/zoom on interactive elements without
+   disabling pinch-zoom for the whole page — pinch-zoom stays available for
+   anyone who needs it (an accessibility requirement), this just stops
+   buttons and links from being mistaken for a "double tap to zoom" target. */
+a, button, input, select, textarea, summary, .btn, [role="button"]{ touch-action:manipulation; }
+html{ scroll-behavior:smooth; }
+@media (prefers-reduced-motion: reduce){
+  html{ scroll-behavior:auto; }
+  *,*::before,*::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; }
+}
+
+body{
+  margin:0;
+  font-family:var(--font-body);
+  font-optical-sizing:auto;
+  color:var(--color-ink);
+  background:var(--color-surface);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+::selection{ background:var(--color-amber); color:var(--color-ink); }
+
+h1,h2,h3,h4{
+  font-family:var(--font-display);
+  font-weight:600;
+  font-optical-sizing:auto;
+  letter-spacing:-0.01em;
+  line-height:1.04;
+  margin:0;
+}
+
+a{ color:inherit; text-decoration:none; }
+img{ max-width:100%; display:block; }
+
+/* ---- Focus visibility (accessibility) ---- */
+a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible{
+  outline:2px solid var(--color-amber);
+  outline-offset:3px;
+  border-radius:2px;
+}
+
+/* ---- Skip link ---- */
+.skip-link{
+  position:absolute; left:-999px; top:auto;
+  background:var(--color-ink); color:#fff;
+  padding:12px 20px; z-index:200; font-family:var(--font-mono); font-size:13px;
+}
+.skip-link:focus{ left:16px; top:16px; }
+
+/* ---- Layout helpers ---- */
+.wrap{
+  width:100%;
+  max-width:var(--container);
+  margin-inline:auto;
+  padding-inline:var(--gutter);
+}
+.grid-12{ display:grid; grid-template-columns:repeat(12,1fr); gap:clamp(16px,2vw,28px); }
+
+section{ position:relative; }
+.section-pad{ padding-block:clamp(72px,10vw,140px); }
+.section-pad-sm{ padding-block:clamp(48px,6vw,84px); }
+
+hr.rule{ border:none; border-top:1px solid var(--color-line); margin:0; }
+.on-dark hr.rule{ border-top-color:var(--color-line-on-dark); }
+
+/* ---- Eyebrow / labels (data material, not decoration) ---- */
+.eyebrow{
+  font-family:var(--font-mono);
+  font-size:12px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--color-brand);
+  display:inline-flex;
+  align-items:center;
+  gap:.6em;
+}
+.on-dark .eyebrow{ color:var(--color-amber); }
+/* Eyebrow labels are plain text now — no decorative dash prefix. */
+
+/* ---- Type scale ---- */
+.display-1{ font-size:clamp(2.6rem, 6vw, 5.4rem); }
+.display-2{ font-size:clamp(2.1rem, 4.6vw, 3.6rem); }
+.h2{ font-size:clamp(1.7rem, 3.2vw, 2.5rem); }
+.h3{ font-size:clamp(1.25rem, 1.8vw, 1.55rem); }
+.body-lg{ font-size:clamp(1.05rem, 1.4vw, 1.2rem); line-height:1.6; color:var(--color-muted); }
+.body{ font-size:1rem; line-height:1.65; color:var(--color-muted); }
+.on-dark .body-lg, .on-dark .body{ color:var(--color-muted-on-dark); }
+
+/* ---- Buttons ---- */
+.btn{
+  --btn-fg: #fff;
+  --btn-bg: var(--color-ink);
+  display:inline-flex; align-items:center; gap:10px;
+  font-family:var(--font-body); font-weight:600; font-size:14.5px;
+  padding:14px 22px;
+  background:var(--btn-bg); color:var(--btn-fg);
+  border:1px solid transparent;
+  border-radius:2px;
+  cursor:pointer;
+  transition:transform var(--dur-fast) var(--ease-out), background var(--dur-fast);
+  white-space:nowrap;
+}
+.btn:hover{ transform:translateY(-1px); }
+.btn .arrow{ transition:transform var(--dur-fast) var(--ease-out); }
+.btn:hover .arrow{ transform:translateX(4px); }
+.btn-primary{ --btn-bg: var(--color-brand); --btn-fg:#fff; }
+.btn-primary:hover{ --btn-bg: var(--color-brand-light); }
+.btn-ghost{
+  --btn-bg: transparent; --btn-fg: var(--color-ink);
+  border-color:var(--color-line);
+}
+.on-dark .btn-ghost, .btn-ghost.on-dark, .site-header .btn-ghost{ --btn-fg:#fff; border-color:var(--color-line-on-dark); }
+.btn-ghost:hover{ border-color:currentColor; }
+.btn-sm{ padding:10px 16px; font-size:13px; }
+
+.text-link{
+  display:inline-flex; align-items:center; gap:8px;
+  font-weight:600; font-size:14.5px;
+  border-bottom:1px solid var(--color-line);
+  padding-bottom:2px;
+  transition:border-color var(--dur-fast), gap var(--dur-fast);
+}
+.text-link:hover{ border-color:currentColor; gap:12px; }
+.on-dark .text-link, .text-link.on-dark{ border-bottom-color:var(--color-line-on-dark); }
+
+/* ---- Navigation ---- */
+.site-header{
+  position:fixed; inset-inline:0; top:0; z-index:100;
+  padding-block:20px;
+  transition:padding var(--dur-med) var(--ease-out), background var(--dur-med);
+  border:none; box-shadow:none;
+  /* Even before is-scrolled kicks in, a soft dark gradient sits behind the nav
+     text — belt-and-suspenders so text never has zero backdrop, on any page,
+     regardless of what's behind it. A wide, gradual fade with no hard stop,
+     so there is nothing that can read as a "line" at its own edge. */
+  background:linear-gradient(180deg, rgba(6,12,23,.6) 0%, rgba(6,12,23,.32) 55%, rgba(6,12,23,0) 100%);
+}
+.site-header.is-scrolled{
+  padding-block:12px;
+  /* Plain solid color — no blur, no border. Blur compositing is exactly what
+     was causing a visible seam at the header's own edge on some renders, so
+     it's gone entirely rather than patched again. See docs/QA-CHECKLIST.md. */
+  background:rgb(9,17,31);
+  border:none; box-shadow:none;
+}
+.site-header .nav-row{ display:flex; align-items:center; justify-content:space-between; gap:36px; }
+.brand{ display:flex; align-items:center; gap:12px; font-family:var(--font-display); font-weight:700; color:#fff; font-size:17px; letter-spacing:-.01em; }
+.brand img{ width:38px; height:38px; border-radius:50%; }
+.nav-links{ display:flex; align-items:center; gap:2px; }
+.nav-links a{
+  color:rgba(255,255,255,.82); font-size:14px; font-weight:500;
+  padding:10px 14px; position:relative;
+}
+.nav-links a span{ position:relative; }
+.nav-links a span::after{
+  content:""; position:absolute; left:0; right:0; bottom:-4px; height:1px;
+  background:var(--color-amber); transform:scaleX(0); transform-origin:left;
+  transition:transform var(--dur-fast) var(--ease-out);
+}
+.nav-links a:hover span::after, .nav-links a[aria-current="page"] span::after{ transform:scaleX(1); }
+.nav-links a[aria-current="page"]{ color:#fff; }
+.nav-cta{ display:flex; align-items:center; gap:10px; }
+.nav-cta .nav-burger{ display:none; }
+
+@media (max-width: 1220px){
+  .nav-links, .nav-cta .btn-ghost, .nav-cta .btn-primary{ display:none; }
+  .nav-cta .nav-burger{ display:flex; }
+}
+@media (max-width: 400px){
+  .brand span{ font-size:15px; }
+}
+
+/* ---- Mobile menu ----
+   Hidden three independent ways (visibility + opacity + transform) so a
+   single point of failure can never leave this visible/overlapping page
+   content — see docs/QA-CHECKLIST.md for why this was hardened. */
+.mobile-menu{
+  position:fixed; inset:0; z-index:150;
+  background:#0A1221;
+  display:flex; flex-direction:column;
+  padding:24px var(--gutter) 40px;
+  transform:translateY(-100%);
+  visibility:hidden;
+  opacity:0;
+  pointer-events:none;
+  overflow-y:auto;
+  transition:transform var(--dur-med) var(--ease-in-out), opacity var(--dur-med), visibility 0s var(--dur-med);
+}
+.mobile-menu.is-open{
+  transform:translateY(0);
+  visibility:visible;
+  opacity:1;
+  pointer-events:auto;
+  transition:transform var(--dur-med) var(--ease-in-out), opacity var(--dur-med), visibility 0s;
+}
+.mobile-menu .top-row{ display:flex; justify-content:space-between; align-items:center; }
+.mobile-menu nav{ margin-top:48px; display:flex; flex-direction:column; }
+.mobile-menu nav a{
+  font-family:var(--font-display); font-size:clamp(28px,8vw,42px); font-weight:600;
+  color:#fff; padding:14px 0; border-bottom:1px solid var(--color-line-on-dark);
+}
+.mobile-menu .foot{ margin-top:auto; display:flex; flex-direction:column; gap:14px; }
+.icon-btn{
+  width:44px; height:44px; display:inline-flex; align-items:center; justify-content:center;
+  border:1px solid var(--color-line-on-dark); border-radius:50%; background:transparent; cursor:pointer;
+}
+.icon-btn svg{ width:18px; height:18px; }
+body.menu-open{ overflow:hidden; }
+
+/* ---- Hero ---- */
+.hero{
+  min-height:100svh;
+  display:flex; flex-direction:column; justify-content:flex-end;
+  position:relative;
+  z-index:0;
+  background:
+    radial-gradient(ellipse 120% 80% at 15% 0%, var(--color-night-2) 0%, transparent 55%),
+    linear-gradient(180deg, var(--color-ink) 0%, #06101F 100%);
+  color:#fff;
+  overflow:hidden;
+  padding-top:120px;
+}
+.hero .scene{ position:absolute; inset:0; z-index:0; }
+.hero .scene svg{ position:absolute; }
+/* Real photography layer: sits behind the gradient/SVG, under a dark scrim
+   so hero type stays readable over any image (brief §117). */
+.hero-photo{
+  position:absolute; inset:0; z-index:-1;
+  background-size:cover; background-position:center;
+  animation:heroPhotoPush 24s ease-in-out infinite alternate;
+}
+/* Full-strength scrim, not a flat opacity fade. A flat opacity lets any hard
+   edge in the photo itself (equipment, a shadow line) show through as a
+   stray "line" — a proper gradient never has a hard edge of its own, and it
+   keeps hero text readable no matter what the underlying photo looks like. */
+.hero-photo::after{
+  content:"";
+  position:absolute; inset:0;
+  background:
+    linear-gradient(180deg, rgba(6,11,21,.82) 0%, rgba(6,11,21,.55) 22%, rgba(6,11,21,.62) 55%, rgba(6,11,21,.93) 100%),
+    linear-gradient(90deg, rgba(6,11,21,.55) 0%, rgba(6,11,21,.15) 45%, rgba(6,11,21,.55) 100%);
+}
+@media (prefers-reduced-motion: reduce){ .hero-photo{ animation:none; } }
+@keyframes heroPhotoPush{ from{ transform:scale(1.04); } to{ transform:scale(1.12); } }
+.hero-content{ position:relative; z-index:2; }
+.hero .kicker-strip{
+  display:flex; flex-wrap:wrap; gap:10px 28px;
+  font-family:var(--font-mono); font-size:12px; letter-spacing:.08em;
+  color:var(--color-muted-on-dark); padding-block:22px;
+  border-top:1px solid var(--color-line-on-dark);
+}
+.hero .kicker-strip b{ color:var(--color-amber); font-weight:500; }
+.hero-scroll{
+  position:absolute; bottom:26px; left:50%; transform:translateX(-50%);
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+  color:rgba(255,255,255,.6); font-family:var(--font-mono); font-size:11px; letter-spacing:.1em;
+  z-index:3;
+  /* Real tap target, not just decoration */
+  background:none; border:none; cursor:pointer; padding:14px 22px;
+  transition:color var(--dur-fast), transform var(--dur-fast) var(--ease-out);
+}
+.hero-scroll:hover, .hero-scroll:focus-visible{ color:#fff; transform:translateX(-50%) translateY(3px); }
+.hero-scroll .line{ width:1px; height:36px; background:rgba(255,255,255,.35); overflow:hidden; }
+.hero-scroll .line::after{
+  content:""; display:block; width:100%; height:40%; background:var(--color-amber);
+  animation:scrollLine 2.2s var(--ease-in-out) infinite;
+}
+@keyframes scrollLine{
+  0%{ transform:translateY(-100%); } 100%{ transform:translateY(250%); }
+}
+
+/* Aircraft line-art drift */
+.hero .jet{ transform-origin:50% 50%; animation:jetDrift 26s var(--ease-in-out) infinite; }
+@keyframes jetDrift{
+  0%{ transform:translate(0,0) scale(1); }
+  50%{ transform:translate(-1.4%, -0.8%) scale(1.015); }
+  100%{ transform:translate(0,0) scale(1); }
+}
+.hero .route-arc{ stroke-dasharray:6 10; animation:dashMove 60s linear infinite; }
+
+/* ---- Global Network diagram: draw-in, travelling pulse, radar ping ----
+   Three layers per route: a guide line that draws itself in once, a bright
+   short dash that loops continuously along the same path (reads as cargo
+   actually moving), and destination dots that pop in once the line arrives.
+   All respect prefers-reduced-motion (see the block below). */
+.route-line{
+  stroke-dasharray:100; stroke-dashoffset:100; opacity:.55;
+  animation:routeDraw 1.6s var(--ease-out) forwards;
+}
+.route-pulse{
+  stroke-dasharray:6 94; stroke-dashoffset:0; opacity:.9;
+  filter:drop-shadow(0 0 3px rgba(143,182,245,.8));
+  animation:routeDraw 1.6s var(--ease-out) forwards, routeFlow 2.6s linear infinite;
+  animation-fill-mode:forwards;
+}
+@keyframes routeDraw{ to{ stroke-dashoffset:0; } }
+@keyframes routeFlow{ from{ stroke-dashoffset:0; } to{ stroke-dashoffset:-200; } }
+.route-dest{
+  opacity:0; transform-box:fill-box; transform-origin:center;
+  animation:routeDestPop .6s var(--ease-out) forwards;
+}
+@keyframes routeDestPop{
+  0%{ opacity:0; transform:scale(0); }
+  60%{ opacity:1; transform:scale(1.6); }
+  100%{ opacity:1; transform:scale(1); }
+}
+.radar-ping{
+  transform-box:fill-box; transform-origin:center;
+  animation:radarPing 3.9s ease-out infinite;
+}
+@keyframes radarPing{
+  0%{ r:5; opacity:.9; stroke-width:2; }
+  100%{ r:34; opacity:0; stroke-width:.4; }
+}
+@media (prefers-reduced-motion: reduce){
+  .route-line{ animation:none; stroke-dashoffset:0; opacity:.55; }
+  .route-pulse{ display:none; }
+  .route-dest{ animation:none; opacity:1; transform:none; }
+  .radar-ping{ animation:none; opacity:0; }
+}
+@keyframes dashMove{ to{ stroke-dashoffset:-1000; } }
+
+/* ---- Departure / manifest ticker (signature element) ---- */
+.manifest{
+  font-family:var(--font-mono); font-size:13px; letter-spacing:.03em;
+  color:var(--color-muted-on-dark);
+  border-top:1px solid var(--color-line-on-dark);
+  border-bottom:1px solid var(--color-line-on-dark);
+  overflow:hidden;
+}
+.manifest-track{
+  display:flex; gap:0; white-space:nowrap;
+  animation:manifestScroll 38s linear infinite;
+}
+.manifest:hover .manifest-track{ animation-play-state:paused; }
+.manifest-item{
+  display:flex; align-items:center; gap:14px;
+  padding:14px 32px;
+  border-right:1px solid var(--color-line-on-dark);
+}
+.manifest-item .code{ color:#fff; font-weight:500; }
+.manifest-item .mode{ color:var(--color-amber); }
+.manifest-item .colon{ animation:blink 1.4s steps(1) infinite; }
+@keyframes blink{ 50%{ opacity:.15; } }
+@keyframes manifestScroll{ from{ transform:translateX(0); } to{ transform:translateX(-50%); } }
+
+/* ---- Reveal on scroll ----
+   IMPORTANT: [data-reveal] is NOT hidden by default. JS adds the .reveal-init
+   class only once it has confirmed it's running (see js/main.js). This means
+   if JavaScript fails to load entirely, every section stays visible instead
+   of being permanently stuck at opacity:0 — see QA-CHECKLIST.md. */
+.reveal-init{
+  opacity:0; transform:translateY(22px);
+  transition:opacity var(--dur-slow) var(--ease-out), transform var(--dur-slow) var(--ease-out);
+}
+.reveal-init.is-visible{ opacity:1; transform:translateY(0); }
+[data-reveal-group] > *{ transition-delay:calc(var(--i,0) * 90ms); }
+
+/* ---- Service rail ----
+   All four services get equal visual weight — no single "featured" tile.
+   (First Experts does air, sea, road and customs in comparable volume; the
+   design shouldn't imply otherwise.) Each keeps a small identifying accent
+   color so they're still easy to tell apart at a glance. */
+.service-rail{ display:grid; grid-template-columns:repeat(12,1fr); gap:1px; background:var(--color-line); border:1px solid var(--color-line); }
+.service-tile{
+  grid-column:span 12;
+  background:var(--color-surface);
+  padding:clamp(28px,3vw,44px);
+  display:flex; flex-direction:column; gap:18px;
+  transition:background var(--dur-med), transform var(--dur-med) var(--ease-out);
+  position:relative;
+  min-height:280px;
+  border-top:3px solid var(--tile-accent, var(--color-brand));
+}
+@media(min-width:640px){
+  .service-tile{ grid-column:span 6; min-height:320px; }
+}
+.service-tile:hover{ background:var(--color-surface-alt); transform:translateY(-2px); }
+.service-tile .num{ font-family:var(--font-mono); font-size:12px; color:var(--tile-accent, var(--color-brand)); }
+.service-tile .icon{ width:48px; height:48px; color:var(--tile-accent, var(--color-ink)); }
+.service-tile .spacer{ flex:1; }
+.service-tile .go{ display:flex; align-items:center; justify-content:space-between; }
+
+
+/* ---- Stat row ---- */
+.stat{ display:flex; flex-direction:column; gap:6px; }
+.stat .n{ font-family:var(--font-display); font-size:clamp(2.2rem,4vw,3.4rem); font-weight:600; letter-spacing:-0.02em; }
+.stat .l{ font-family:var(--font-mono); font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--color-muted); }
+.on-dark .stat .l{ color:var(--color-muted-on-dark); }
+
+/* ---- Timeline (real, sequential — history) ---- */
+.timeline{ border-top:1px solid var(--color-line); }
+.timeline-row{
+  display:grid; grid-template-columns: 90px 1fr; gap:24px;
+  padding-block:26px; border-bottom:1px solid var(--color-line);
+}
+.timeline-row .yr{ font-family:var(--font-mono); font-size:14px; color:var(--color-brand); }
+
+/* ---- Cards: industries / values ---- */
+.plate{ border:1px solid var(--color-line); padding:26px; height:100%; }
+.plate .icon{ width:34px; height:34px; margin-bottom:18px; color:var(--color-brand); }
+
+/* ---- Route table ---- */
+.route-table{ width:100%; border-collapse:collapse; }
+.route-table th{
+  text-align:left; font-family:var(--font-mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--color-muted); font-weight:500; padding:14px 12px; border-bottom:1px solid var(--color-line);
+}
+.route-table td{ padding:18px 12px; border-bottom:1px solid var(--color-line); font-size:15px; }
+.route-table tr td:first-child{ font-family:var(--font-mono); }
+.route-table .tag{
+  display:inline-flex; align-items:center; gap:6px; font-family:var(--font-mono); font-size:11px;
+  letter-spacing:.06em; text-transform:uppercase; padding:4px 9px; border:1px solid var(--color-line); border-radius:20px;
+}
+.route-table .tag.sea{ color:#0B5FA5; }
+.route-table .tag.air{ color:var(--color-brand); }
+.route-table .tag.road{ color:#8A5A1E; }
+.route-filter{ display:flex; gap:8px; flex-wrap:wrap; }
+.route-filter button{
+  font-family:var(--font-mono); font-size:12px; padding:9px 16px; border:1px solid var(--color-line);
+  background:transparent; cursor:pointer; border-radius:30px; transition:background var(--dur-fast), color var(--dur-fast);
+}
+.route-filter button[aria-pressed="true"]{ background:var(--color-ink); color:#fff; border-color:var(--color-ink); }
+tr.is-hidden{ display:none; }
+
+/* ---- Testimonials ---- */
+.quote-card{ border-left:2px solid var(--color-brand); padding-left:22px; }
+.quote-card p{ font-family:var(--font-display); font-size:clamp(1.05rem,1.6vw,1.3rem); font-weight:500; line-height:1.45; }
+.quote-card cite{ font-style:normal; font-family:var(--font-mono); font-size:12.5px; color:var(--color-muted); display:block; margin-top:14px; }
+
+/* ---- Forms ---- */
+.field{ display:flex; flex-direction:column; gap:8px; }
+.field label{ font-family:var(--font-mono); font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--color-muted); }
+.field input, .field select, .field textarea{
+  font-family:var(--font-body); font-size:15.5px; padding:14px 16px;
+  border:1px solid var(--color-line); background:#fff; border-radius:2px; width:100%;
+  transition:border-color var(--dur-fast);
+}
+.field input:focus, .field select:focus, .field textarea:focus{ border-color:var(--color-ink); outline:none; }
+.field .err{ font-size:12.5px; color:#B3261E; display:none; font-family:var(--font-mono); }
+.field.has-error input, .field.has-error select, .field.has-error textarea{ border-color:#B3261E; }
+.field.has-error .err{ display:block; }
+.mode-select{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+@media(min-width:640px){ .mode-select{ grid-template-columns:repeat(4,1fr); } }
+.mode-opt{ position:relative; }
+.mode-opt input{ position:absolute; opacity:0; inset:0; cursor:pointer; }
+.mode-opt span{
+  display:flex; flex-direction:column; gap:10px; padding:18px 16px; border:1px solid var(--color-line);
+  font-size:14px; font-weight:600; transition:border-color var(--dur-fast), background var(--dur-fast);
+}
+.mode-opt input:checked + span{ border-color:var(--color-ink); background:var(--color-ink); color:#fff; }
+.mode-opt input:focus-visible + span{ outline:2px solid var(--color-amber); outline-offset:2px; }
+.form-status{ font-family:var(--font-mono); font-size:13px; padding:14px; border:1px dashed var(--color-line); display:none; }
+.form-status.is-visible{ display:block; }
+
+/* ---- Footer ---- */
+.site-footer{ background:var(--color-ink); color:#fff; }
+.site-footer a{ color:var(--color-muted-on-dark); transition:color var(--dur-fast); }
+.site-footer a:hover{ color:#fff; }
+.footer-grid{ display:grid; grid-template-columns:1fr; gap:48px; }
+@media(min-width:860px){ .footer-grid{ grid-template-columns: 1.4fr repeat(3, 1fr); } }
+.social-row{ display:flex; gap:12px; flex-wrap:wrap; }
+
+/* ---- Misc ---- */
+.divider-x{ height:1px; background:var(--color-line); width:100%; }
+.container-xs{ max-width:640px; }
+.grain{ position:relative; }
+.grain::before{
+  content:""; position:absolute; inset:0; pointer-events:none; opacity:.035; mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---- Section-level photo background (any section, not just .hero) ----
+   A real photograph, a dark gradient scrim on top so text stays readable
+   (brief §117), then the section's own content on top of that. */
+.section-photo{ position:relative; overflow:hidden; z-index:0; }
+.section-photo .photo-layer{
+  position:absolute; inset:0; z-index:-1;
+  background-size:cover; background-position:center;
+}
+.section-photo .photo-layer::after{
+  content:"";
+  position:absolute; inset:0;
+  background:
+    linear-gradient(180deg, rgba(6,11,21,.72) 0%, rgba(6,11,21,.5) 30%, rgba(6,11,21,.6) 60%, rgba(6,11,21,.92) 100%),
+    linear-gradient(90deg, rgba(6,11,21,.4) 0%, rgba(6,11,21,.1) 45%, rgba(6,11,21,.4) 100%);
+}
+
+.bg-ink{ background:var(--color-ink); color:#fff; }
+.bg-night{ background:linear-gradient(160deg,var(--color-night) 0%, var(--color-ink) 100%); color:#fff; }
+.bg-surface-alt{ background:var(--color-surface-alt); }
+
+::-moz-selection{ background:var(--color-amber); color:var(--color-ink); }
+
+@media (max-width:640px){
+  .section-pad{ padding-block:64px; }
+  .grid-12{ gap:16px; }
+}
