@@ -1,5 +1,27 @@
 # CHANGELOG.md
 
+## Phase 9 — New homepage sections, Lagos-USA route corrected to Air
+
+**What changed:**
+
+1. **Lagos → USA is now Air, not Sea**, everywhere it appears: the routes table
+   (`routes.html`), both loops of the homepage hero ticker, and confirmed correct under
+   the route filter (tested by clicking the Air filter and checking USA appears).
+   Updated the estimate to 2 to 4 days / 4x weekly to match an air lane instead of the
+   old 21 to 28 days sea estimate.
+2. **New "How It Works" section on the homepage** — a 4-step Book → Move → Clear →
+   Deliver breakdown with a photo background, between Services and Global Network.
+3. **New "From the Guides" section on the homepage** — surfaces 3 of the 4 blog posts
+   with their accent colors, linking into the Insights content instead of leaving it
+   only reachable from the nav.
+4. Both new sections respect the same reveal-on-scroll and reduced-motion handling as
+   the rest of the site, and were checked for mobile overflow.
+
+**Still waiting on your answer, not forgotten:** whether Haulage and e-commerce
+logistics are real, current services worth building pages for.
+
+---
+
 ## Phase 8 — Privacy/Terms rewrite, nav fix, real blog, dash cleanup
 
 **What changed:**
