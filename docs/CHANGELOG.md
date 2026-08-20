@@ -331,3 +331,28 @@ verified vs deliberately left out).
 **Risks / known issues:** See QA-CHECKLIST.md → "Known limitations." Nothing blocking a
 soft launch, but read it before pushing live.
 
+## Phase — Haulage + E-commerce Logistics added as full services
+
+**What changed:** Two new standalone service pages built and wired in everywhere
+services are referenced.
+
+**Why:** Client confirmed both are real services and asked for them to be built out,
+not folded into Door to Door (Haulage) or left off entirely (E-commerce Logistics).
+
+**Files changed:**
+- New: `haulage.html`, `ecommerce.html` (full pages — hero, explainer, process/benefits,
+  FAQ, closing CTA — matching the existing service-page template)
+- `services.html` — two new sections (05 Haulage, 06 E-commerce), heading updated to
+  "Six ways we move your cargo forward"
+- `index.html` — two new homepage service tiles, heading updated to match
+- `quote.html` — two new options added to the "Shipping mode" selector
+- `faq.html` — services answer updated; Haulage answer corrected (no longer says
+  "only as part of Door to Door"); new e-commerce question added
+- `sitemap.xml` — both new URLs added
+- `docs/COMPANY-FACTS.md` — services table updated from four to six; the old note
+  explaining why Haulage was left out has been replaced with the client confirmation
+
+**Known limitation carried over:** no fulfillment volume, courier-partner names, or
+warehouse specifics are claimed on the E-commerce Logistics page — none of that is
+verified, so it's kept general per the no-invented-facts rule.
+

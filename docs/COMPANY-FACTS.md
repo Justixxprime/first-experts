@@ -19,19 +19,14 @@ Status key: **VERIFIED** = confirmed on the current live site or official assets
 | Ships to 40+ countries | VERIFIED | firstexpertslogistics.com homepage |
 | Industries served: Oil & Gas, Aviation, Telecoms, Manufacturing, Agencies, Government | VERIFIED | firstexpertslogistics.com/about.html |
 
-## Services (all VERIFIED — firstexpertslogistics.com/services.html)
+## Services (six, confirmed directly by the client)
 
 - Air Freight Consolidation — express/priority booking, real-time status updates, urgent/high-value handling
 - Sea Freight — FCL & LCL, major global lanes, port handling + documentation
 - Door to Door — pickup at origin to delivery at destination, one point of contact
 - Customs Clearance — licensed clearance at Nigerian ports/airports, documentation handled
-
-**Only these four.** The original creative brief also describes a standalone "Haulage"
-service — this was deliberately NOT built as a separate page/service, because it isn't
-listed anywhere on the live site. Road transport is real (it's how Door to Door
-physically happens) but it's part of that service, not a distinct fifth offering. If
-the company does offer standalone haulage (road transport without the full door-to-door
-coordination), add it here with a source before building it out.
+- **Haulage** — standalone road freight/trucking out of Lagos, domestic and cross-border, on its own or paired with Door to Door. Previously left out because it wasn't on the live site; the client has since confirmed this directly and asked for it to be built as its own service. Now built as `haulage.html`, with its own nav entry on Services, homepage tile, and quote-form option.
+- **E-commerce Logistics** — import freight + customs + delivery packaged for online sellers (to their own warehouse, a fulfillment partner, or straight to customers). Also client-confirmed and newly built as `ecommerce.html`. No specific fulfillment-center count, courier-partner names, or order volumes are claimed anywhere — kept deliberately generic per the "don't invent facts" rule, since none of that has been verified.
 
 **Visual balance (updated per your direction):** the homepage service section
 originally gave Air Freight a larger "featured" tile than the other three, following
