@@ -98,6 +98,26 @@
     </div>
   </section>
 
+  <section class="section-pad-sm bg-night grain">
+    <div class="wrap">
+      <p class="eyebrow on-dark" style="margin-bottom:26px;">Lagos, in the air</p>
+      <svg class="flight-path-wrap" viewBox="0 0 900 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Animated route line from Lagos to a destination, illustrative only">
+        <circle class="radar-ping" cx="90" cy="140" r="6" fill="none" stroke="#E6A23C" stroke-width="1.5" style="animation-delay:0s;"/>
+        <circle class="radar-ping" cx="90" cy="140" r="6" fill="none" stroke="#E6A23C" stroke-width="1.5" style="animation-delay:1.3s;"/>
+        <path id="fe-flight-path" data-flight-path d="M90,140 Q400,10 810,90" pathLength="100" stroke="#2E6FD9" stroke-width="1.1" fill="none" class="route-line" style="animation-delay:.1s;"/>
+        <path d="M90,140 Q400,10 810,90" pathLength="100" stroke="#8FB6F5" stroke-width="2" fill="none" class="route-pulse" style="animation-delay:.6s;"/>
+        <circle cx="90" cy="140" r="4" fill="var(--color-amber)"/>
+        <circle cx="810" cy="90" r="4" fill="#fff" class="route-dest" style="animation-delay:1.6s;"/>
+        <text x="60" y="168" fill="#93A0B8" font-family="IBM Plex Mono, monospace" font-size="12" letter-spacing="1">LOS</text>
+        <text x="795" y="72" fill="#93A0B8" font-family="IBM Plex Mono, monospace" font-size="12" letter-spacing="1" text-anchor="end">DXB</text>
+        <g data-flight-plane style="opacity:0;">
+          <svg x="-9" y="-9" width="18" height="18" viewBox="0 0 24 24" fill="#E6A23C"><path class="flight-plane" d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2.5 1.5V22l4-1 4 1v-1.5L13 19v-5.5l8 2.5z"/></svg>
+        </g>
+      </svg>
+      <p class="body on-dark" style="margin-top:18px;font-size:13px;max-width:52ch;">Illustrative route line. See the <a href="routes.html" class="text-link on-dark">Routes page</a> for actual example lanes and transit times.</p>
+    </div>
+  </section>
+
   <section class="section-pad-sm">
     <div class="wrap grid-12">
       <div style="grid-column:1/-1;max-width:64ch;" data-reveal>
@@ -226,6 +246,7 @@
         <a href="terms.html">Terms of Use</a>
       </div>
     </div>
+    <p class="dev-credit" style="margin-top:14px;font-family:var(--font-mono);font-size:11.5px;color:var(--color-muted-on-dark);">Website designed &amp; powered by <a href="https://wa.me/2349133058119" target="_blank" rel="noopener">Obioma Chibueze Justice</a></p>
   </div>
 </footer>
 

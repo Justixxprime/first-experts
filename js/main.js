@@ -361,4 +361,116 @@
     }
   } catch (err) { /* the tracking form still shows; only lookup is affected */ }
 
+  /* ---------- Scroll parallax on photo backgrounds ----------
+     Background-image divs only (.hero-photo, .photo-layer), shifted via
+     background-position rather than transform, so this never fights the
+     existing Ken Burns scale animation (which already owns `transform`
+     on these same elements). Skipped entirely on reduced motion. */
+  try {
+    if (!reduceMotion) {
+      const parallaxEls = Array.from(document.querySelectorAll('.hero-photo, .photo-layer'));
+      if (parallaxEls.length) {
+        let ticking = false;
+        const update = () => {
+          const vh = window.innerHeight;
+          parallaxEls.forEach((el) => {
+            const rect = el.getBoundingClientRect();
+            const centerOffset = (rect.top + rect.height / 2) - vh / 2;
+            const shift = Math.max(-14, Math.min(14, centerOffset * 0.04));
+            el.style.backgroundPosition = `center calc(50% + ${shift}px)`;
+          });
+          ticking = false;
+        };
+        const onScroll = () => {
+          if (!ticking) { requestAnimationFrame(update); ticking = true; }
+        };
+        update();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll);
+      }
+    }
+  } catch (err) { /* photo backgrounds stay centered — no parallax, no harm */ }
+
+  /* ---------- Magnetic primary buttons (desktop, fine pointer only) ----------
+     A subtle pull toward the cursor within the button's own bounds, reset
+     on mouse leave. Skipped on touch devices and reduced motion entirely —
+     this is pure flourish, never a functional dependency. */
+  try {
+    const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (canHover && !reduceMotion) {
+      document.querySelectorAll('.btn-primary').forEach((btn) => {
+        btn.addEventListener('mousemove', (e) => {
+          const rect = btn.getBoundingClientRect();
+          const x = (e.clientX - rect.left - rect.width / 2) * 0.28;
+          const y = (e.clientY - rect.top - rect.height / 2) * 0.35;
+          btn.style.transform = `translate(${x}px, ${y - 1}px)`;
+        });
+        btn.addEventListener('mouseleave', () => {
+          btn.style.transform = '';
+        });
+      });
+    }
+  } catch (err) { /* buttons remain fully usable with their normal CSS hover state */ }
+
+  /* ---------- Custom cursor (desktop, fine pointer only) ----------
+     A single dot injected once, followed via rAF, that grows over links,
+     buttons and anything else clickable. Body gets `custom-cursor-on` only
+     once this successfully initializes, which is what hides the native
+     cursor (see styles.css) — so if this block fails for any reason, the
+     native cursor was never hidden in the first place. */
+  try {
+    const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (canHover && !reduceMotion) {
+      const dot = document.createElement('div');
+      dot.className = 'cursor-dot';
+      document.body.appendChild(dot);
+      document.body.classList.add('custom-cursor-on');
+
+      let mx = 0, my = 0, dx = 0, dy = 0, raf = null;
+      const loop = () => {
+        dx += (mx - dx) * 0.22;
+        dy += (my - dy) * 0.22;
+        dot.style.transform = `translate(${dx}px, ${dy}px) translate(-50%,-50%)`;
+        raf = requestAnimationFrame(loop);
+      };
+      window.addEventListener('mousemove', (e) => {
+        mx = e.clientX; my = e.clientY;
+        dot.classList.add('is-active');
+      }, { passive: true });
+      document.addEventListener('mouseleave', () => dot.classList.remove('is-active'));
+      const hoverSelector = 'a, button, summary, input, textarea, [role="button"]';
+      document.addEventListener('mouseover', (e) => {
+        if (e.target.closest && e.target.closest(hoverSelector)) dot.classList.add('is-hover');
+      });
+      document.addEventListener('mouseout', (e) => {
+        if (e.target.closest && e.target.closest(hoverSelector)) dot.classList.remove('is-hover');
+      });
+      raf = requestAnimationFrame(loop);
+    }
+  } catch (err) { /* body never got .custom-cursor-on, so the native cursor was never hidden */ }
+
+  /* ---------- Air Freight flight-path animation (air-freight.html only) ----------
+     Adds a plane riding the existing route-pulse path via SMIL
+     animateMotion — additive only (the static path/dots already render
+     from the HTML itself without this), and skipped on reduced motion. */
+  try {
+    if (!reduceMotion) {
+      const path = document.querySelector('[data-flight-path]');
+      const plane = document.querySelector('[data-flight-plane]');
+      if (path && plane) {
+        const NS = 'http://www.w3.org/2000/svg';
+        const anim = document.createElementNS(NS, 'animateMotion');
+        anim.setAttribute('dur', '4.2s');
+        anim.setAttribute('repeatCount', 'indefinite');
+        anim.setAttribute('rotate', 'auto');
+        anim.setAttribute('begin', '1.6s');
+        const mpath = document.createElementNS(NS, 'mpath');
+        mpath.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#' + path.id);
+        anim.appendChild(mpath);
+        plane.appendChild(anim);
+        plane.style.opacity = '1';
+      }
+    }
+  } catch (err) { /* the static path and destination dot still show, just no riding plane */ }
+
 })();

@@ -389,3 +389,45 @@ nav entry, `docs/ASSET-SOURCES.md`, `docs/CHANGELOG.md`,
 **Risks / known issues:** none introduced. Real company photography and the
 Contact page photo slot are still open — see MEDIA-REPLACEMENT-GUIDE.md.
 
+## Phase — Legal disclaimer removed, developer credit added
+
+**What changed:**
+- Removed the "reviewed for plain-language clarity... recommend periodic review
+  by qualified counsel" disclaimer from the bottom of `privacy.html` and
+  `terms.html`.
+- Added a footer credit line on every page with a footer: "Website designed &
+  powered by Obioma Chibueze Justice," linking to WhatsApp
+  (`https://wa.me/2349133058119`).
+
+**Files changed:** `privacy.html`, `terms.html`, `css/styles.css`, plus the
+footer on every other page with a footer (21 files).
+
+## Phase — Motion & interaction elevation pass
+
+**What changed:**
+- **Hero staggered text reveal:** the eyebrow/headline/subhead/CTA row on every
+  hero now cascade in with individual delays instead of appearing as one block.
+  Pure CSS, layered on top of the existing scroll-reveal system — no HTML changes.
+- **Scroll parallax on photo backgrounds:** every `.hero-photo` and `.photo-layer`
+  background image now drifts subtly on scroll, via `background-position` (not
+  `transform`, so it never fights the existing Ken Burns scale animation on the
+  same elements). Skipped entirely on reduced motion.
+- **Magnetic primary buttons:** `.btn-primary` buttons pull subtly toward the
+  cursor on desktop. Skipped on touch and reduced motion.
+- **Custom cursor:** a small dot that follows the pointer and grows over
+  clickable elements, desktop/fine-pointer only — verified it never appears on
+  touch/mobile viewports.
+- **Air Freight flight-path visual (signature moment):** a new section right
+  after the Air Freight hero, reusing the same route-line/route-pulse/route-dest
+  visual language already built for the homepage's Global Network diagram, with
+  a plane icon riding the path via SMIL `animateMotion`. Explicitly labeled
+  "Illustrative route line" with a link to the real Routes page, so it reads as
+  atmosphere, not a factual claim.
+
+**Files changed:** `css/styles.css`, `js/main.js`, `air-freight.html`.
+
+**Verified:** all pages checked for console/JS errors with mouse movement and
+scroll exercised — clean everywhere. Custom cursor confirmed present on desktop
+and absent on a touch/mobile emulated viewport. All existing tag-balance and
+broken-link checks re-run clean after this pass.
+
