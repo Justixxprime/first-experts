@@ -356,3 +356,36 @@ not folded into Door to Door (Haulage) or left off entirely (E-commerce Logistic
 warehouse specifics are claimed on the E-commerce Logistics page — none of that is
 verified, so it's kept general per the no-invented-facts rule.
 
+## Phase — PWA manifest fix, Routes shown as Air, nav highlighting, media guide
+
+**What changed:**
+- Fixed `manifest.json`: `start_url` and `scope` were root-absolute (`/index.html`,
+  `/`), which breaks "Add to Home Screen" on any subpath deployment like the
+  GitHub Pages testing URL — likely the exact cause of the client's iPhone report.
+  Changed to relative paths (`./index.html`, `./`), works on both the testing
+  subpath and the future cPanel root domain.
+- Routes page + homepage lane ticker: all six example lanes now show as Air
+  (Rotterdam/Shanghai given realistic air transit times instead of their old sea
+  timings, Accra changed from Road·Haulage to a 1-day Air Express regional lane).
+  Removed the Sea/Road route filter buttons since there's no longer any non-Air
+  data to filter. Routes page copy now links to Sea Freight/Haulage for anyone who
+  needs those modes specifically.
+- Desktop header, mobile menu, and footer nav now all mark the current page
+  (`aria-current="page"`, amber highlight) consistently on every page that has a
+  matching entry — previously only the desktop header did this, and even there a
+  few pages (FAQ, Privacy, Terms) were missing it.
+- Legal-review disclaimer on Privacy/Terms — already present, confirmed as still
+  in place, no change needed.
+- Added `docs/MEDIA-REPLACEMENT-GUIDE.md` — a plain-language table mapping every
+  photo slot on the site to an exact filename, recommended size, and what to
+  photograph, so the client can drop in real company photography later without
+  touching any code.
+
+**Files changed:** `manifest.json`, `routes.html`, `index.html`,
+`css/styles.css`, plus footer/mobile-menu markup on every page with a matching
+nav entry, `docs/ASSET-SOURCES.md`, `docs/CHANGELOG.md`,
+`docs/MEDIA-REPLACEMENT-GUIDE.md` (new).
+
+**Risks / known issues:** none introduced. Real company photography and the
+Contact page photo slot are still open — see MEDIA-REPLACEMENT-GUIDE.md.
+

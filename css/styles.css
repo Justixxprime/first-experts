@@ -250,6 +250,7 @@ hr.rule{ border:none; border-top:1px solid var(--color-line); margin:0; }
   font-family:var(--font-display); font-size:clamp(28px,8vw,42px); font-weight:600;
   color:#fff; padding:14px 0; border-bottom:1px solid var(--color-line-on-dark);
 }
+.mobile-menu nav a[aria-current="page"]{ color:var(--color-amber); }
 .mobile-menu .foot{ margin-top:auto; display:flex; flex-direction:column; gap:14px; }
 .icon-btn{
   width:44px; height:44px; display:inline-flex; align-items:center; justify-content:center;
@@ -509,6 +510,7 @@ tr.is-hidden{ display:none; }
 .site-footer{ background:var(--color-ink); color:#fff; }
 .site-footer a{ color:var(--color-muted-on-dark); transition:color var(--dur-fast); }
 .site-footer a:hover{ color:#fff; }
+.site-footer a[aria-current="page"]{ color:var(--color-amber); }
 .footer-grid{ display:grid; grid-template-columns:1fr; gap:48px; }
 @media(min-width:860px){ .footer-grid{ grid-template-columns: 1.4fr repeat(3, 1fr); } }
 .social-row{ display:flex; gap:12px; flex-wrap:wrap; }

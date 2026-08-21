@@ -26,9 +26,12 @@ practice and per the brief's own asset-sourcing rule (§45).
 | Used on | Unsplash URL | Photographer | Published |
 |---|---|---|---|
 | Homepage hero + Air Freight page hero | `images.unsplash.com/photo-1663517334988-f5c1c10ebccc` | Bernd Dittrich ([@hdbernd](https://unsplash.com/@hdbernd)) | Sep 18, 2022 |
-| Sea Freight page hero | `images.unsplash.com/photo-1511578194003-00c80e42dc9b` | CHUTTERSNAP ([@chuttersnap](https://unsplash.com/@chuttersnap)) | Nov 25, 2017 |
+| Sea Freight page hero, Routes page hero | `images.unsplash.com/photo-1511578194003-00c80e42dc9b` | CHUTTERSNAP ([@chuttersnap](https://unsplash.com/@chuttersnap)) | Nov 25, 2017 |
 | Door to Door page hero | `images.unsplash.com/photo-1720811559395-3ed8d1b16649` | Tom Jackson ([@themrjaxon](https://unsplash.com/@themrjaxon)) | Jul 12, 2024 |
 | Customs Clearance page hero | `images.unsplash.com/photo-1758146296671-0e46a91739a8` | Paul Lichtblau ([@laup](https://unsplash.com/@laup)) | Sep 17, 2025 |
+| Haulage page hero | `images.unsplash.com/photo-1519003722824-194d4455a60c` | Unsplash contributor | — |
+| E-commerce Logistics page hero | `images.unsplash.com/photo-1553413077-190dd305871c` | Unsplash contributor | — |
+| Homepage "How it works" section | `images.unsplash.com/photo-1645736315000-6f788915923b` | Unsplash contributor | — |
 
 **How these are loaded:** as direct hotlinks to Unsplash's own image CDN (that's what
 the long `images.unsplash.com/...` URLs in the HTML are) — not downloaded into the
