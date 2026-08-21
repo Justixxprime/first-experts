@@ -298,21 +298,23 @@ body.menu-open{ overflow:hidden; }
 /* ---- Hero staggered text reveal ----
    The hero's [data-reveal] wrapper already fades/translates as one block
    (see "Reveal on scroll" below) — this layers a per-child cascade on top
-   of it, scoped to .hero only, so the eyebrow/headline/subhead/CTA row
-   arrive in sequence instead of all at once. Parent keeps its own opacity
-   fade; the translateY motion moves to the children so it doesn't double up. */
-.hero [data-reveal] > *{
+   of it, scoped to any picture-hero (.hero on the homepage, .section-photo
+   on every inner-page hero with a background photo), so the eyebrow/
+   headline/subhead/CTA row arrive in sequence instead of all at once.
+   Parent keeps its own opacity fade; the translateY motion moves to the
+   children so it doesn't double up. */
+.hero [data-reveal] > *, .section-photo [data-reveal] > *{
   opacity:0; transform:translateY(18px);
   transition:opacity .8s var(--ease-out), transform .8s var(--ease-out);
 }
-.hero [data-reveal].is-visible > *{ opacity:1; transform:translateY(0); }
-.hero [data-reveal].is-visible > *:nth-child(1){ transition-delay:.05s; }
-.hero [data-reveal].is-visible > *:nth-child(2){ transition-delay:.2s; }
-.hero [data-reveal].is-visible > *:nth-child(3){ transition-delay:.36s; }
-.hero [data-reveal].is-visible > *:nth-child(4){ transition-delay:.52s; }
-.hero .reveal-init{ transform:none; }
+.hero [data-reveal].is-visible > *, .section-photo [data-reveal].is-visible > *{ opacity:1; transform:translateY(0); }
+.hero [data-reveal].is-visible > *:nth-child(1), .section-photo [data-reveal].is-visible > *:nth-child(1){ transition-delay:.05s; }
+.hero [data-reveal].is-visible > *:nth-child(2), .section-photo [data-reveal].is-visible > *:nth-child(2){ transition-delay:.2s; }
+.hero [data-reveal].is-visible > *:nth-child(3), .section-photo [data-reveal].is-visible > *:nth-child(3){ transition-delay:.36s; }
+.hero [data-reveal].is-visible > *:nth-child(4), .section-photo [data-reveal].is-visible > *:nth-child(4){ transition-delay:.52s; }
+.hero .reveal-init, .section-photo .reveal-init{ transform:none; }
 @media (prefers-reduced-motion: reduce){
-  .hero [data-reveal] > *{ opacity:1; transform:none; transition:none; }
+  .hero [data-reveal] > *, .section-photo [data-reveal] > *{ opacity:1; transform:none; transition:none; }
 }
 .hero-content{ position:relative; z-index:2; }
 .hero .kicker-strip{
@@ -553,7 +555,9 @@ tr.is-hidden{ display:none; }
 .section-photo .photo-layer{
   position:absolute; inset:0; z-index:-1;
   background-size:cover; background-position:center;
+  animation:heroPhotoPush 24s ease-in-out infinite alternate;
 }
+@media (prefers-reduced-motion: reduce){ .section-photo .photo-layer{ animation:none; } }
 .section-photo .photo-layer::after{
   content:"";
   position:absolute; inset:0;
@@ -572,22 +576,6 @@ tr.is-hidden{ display:none; }
   .section-pad{ padding-block:64px; }
   .grid-12{ gap:16px; }
 }
-
-/* ---- Custom cursor (desktop, fine pointer only — enabled/disabled by JS
-   checking (hover:hover) and (pointer:fine), so touch devices never see
-   this and never lose their native cursor). ---- */
-.cursor-dot{
-  position:fixed; top:0; left:0; width:9px; height:9px;
-  border-radius:50%; background:var(--color-amber);
-  pointer-events:none; z-index:9999;
-  transform:translate(-50%,-50%);
-  transition:width .25s var(--ease-out), height .25s var(--ease-out), opacity .2s var(--ease-out), background .25s var(--ease-out);
-  opacity:0;
-  mix-blend-mode:difference;
-}
-.cursor-dot.is-active{ opacity:1; }
-.cursor-dot.is-hover{ width:34px; height:34px; background:#fff; }
-body.custom-cursor-on, body.custom-cursor-on a, body.custom-cursor-on button{ cursor:none; }
 
 /* ---- Flight-path visual (Air Freight page signature moment) ----
    Reuses the same route-line / route-pulse / route-dest language as the

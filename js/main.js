@@ -412,43 +412,6 @@
     }
   } catch (err) { /* buttons remain fully usable with their normal CSS hover state */ }
 
-  /* ---------- Custom cursor (desktop, fine pointer only) ----------
-     A single dot injected once, followed via rAF, that grows over links,
-     buttons and anything else clickable. Body gets `custom-cursor-on` only
-     once this successfully initializes, which is what hides the native
-     cursor (see styles.css) — so if this block fails for any reason, the
-     native cursor was never hidden in the first place. */
-  try {
-    const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-    if (canHover && !reduceMotion) {
-      const dot = document.createElement('div');
-      dot.className = 'cursor-dot';
-      document.body.appendChild(dot);
-      document.body.classList.add('custom-cursor-on');
-
-      let mx = 0, my = 0, dx = 0, dy = 0, raf = null;
-      const loop = () => {
-        dx += (mx - dx) * 0.22;
-        dy += (my - dy) * 0.22;
-        dot.style.transform = `translate(${dx}px, ${dy}px) translate(-50%,-50%)`;
-        raf = requestAnimationFrame(loop);
-      };
-      window.addEventListener('mousemove', (e) => {
-        mx = e.clientX; my = e.clientY;
-        dot.classList.add('is-active');
-      }, { passive: true });
-      document.addEventListener('mouseleave', () => dot.classList.remove('is-active'));
-      const hoverSelector = 'a, button, summary, input, textarea, [role="button"]';
-      document.addEventListener('mouseover', (e) => {
-        if (e.target.closest && e.target.closest(hoverSelector)) dot.classList.add('is-hover');
-      });
-      document.addEventListener('mouseout', (e) => {
-        if (e.target.closest && e.target.closest(hoverSelector)) dot.classList.remove('is-hover');
-      });
-      raf = requestAnimationFrame(loop);
-    }
-  } catch (err) { /* body never got .custom-cursor-on, so the native cursor was never hidden */ }
-
   /* ---------- Air Freight flight-path animation (air-freight.html only) ----------
      Adds a plane riding the existing route-pulse path via SMIL
      animateMotion — additive only (the static path/dots already render

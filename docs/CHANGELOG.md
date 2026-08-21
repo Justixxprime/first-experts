@@ -431,3 +431,23 @@ scroll exercised — clean everywhere. Custom cursor confirmed present on deskto
 and absent on a touch/mobile emulated viewport. All existing tag-balance and
 broken-link checks re-run clean after this pass.
 
+## Phase — Custom cursor removed; Ken Burns + stagger extended to every photo hero
+
+**What changed:**
+- Removed the custom cursor entirely (JS injection block and all
+  `.cursor-dot` / `.custom-cursor-on` CSS) — client feedback was that it
+  didn't read as professional. Native browser cursor everywhere again.
+- The Ken Burns slow-zoom animation (previously homepage-only, on
+  `.hero-photo`) now also applies to every inner-page photo hero
+  (`.section-photo .photo-layer`): Air Freight, Sea Freight, Door to Door,
+  Customs, Haulage, E-commerce Logistics, Routes.
+- The staggered text reveal (previously homepage-only) now also applies to
+  those same seven inner-page photo heroes, so their eyebrow/headline/
+  subhead/CTA cascade in on load the same way the homepage hero does.
+
+**Files changed:** `css/styles.css`, `js/main.js`.
+
+**Verified:** headless-browser check across all 8 photo-hero pages confirms
+the cursor is gone, the Ken Burns animation is active, and there are zero
+JS errors — on every one of them.
+
