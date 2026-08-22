@@ -451,3 +451,245 @@ broken-link checks re-run clean after this pass.
 the cursor is gone, the Ken Burns animation is active, and there are zero
 JS errors — on every one of them.
 
+## Phase — Fixed mobile overflow bug (How it works cards + quote form overlap)
+
+**What changed:** Two client-reported bugs on mobile, same root cause:
+`.grid-12` was always `repeat(12,1fr)` with no mobile stacking rule, and 27+
+elements across the site used inline `grid-column:span 6` (or `span 3`) at
+every screen size. On a phone, two 50%-width form fields or four 25%-width
+cards became too narrow for their content:
+- Homepage "How it works" — steps 03/04 ran off the right edge of the
+  screen, text cut off (client screenshot).
+- Quote form — "Preferred pickup date" and "Company" sat side by side and
+  visually overlapped, because a native date input's minimum rendering
+  width didn't fit a 50%-wide column on a phone.
+
+**Fix:** replaced every inline `grid-column:span 6` / `span 3` (about.html,
+contact.html, quote.html, index.html — 31 elements total) with new
+`.col-6` / `.col-3` utility classes that default to full width (stacked)
+below 640px and only widen to their intended fraction above that, matching
+every other responsive pattern already used on the site.
+
+**A mistake caught and fixed in the same pass:** the first version of this
+fix used a CSS attribute selector matching the inline style text directly,
+with no HTML changes. It broke silently: the site's own reveal-stagger
+script sets a `--i` custom property via `style.setProperty()`, which makes
+the browser re-serialize the whole `style` attribute with different
+spacing, so the attribute selector stopped matching on any element the
+reveal system touched — which is nearly everything. Moved to real CSS
+classes instead, which don't depend on the literal inline style text.
+Also caught immediately after: on quote.html and contact.html, the
+original elements had `style=` before `class="field"` in the source, so
+the substitution produced two separate `class` attributes on the same
+element (`class="col-6" class="field"`) — invalid HTML, and the browser
+silently keeps only the first, dropping `.field`'s input/label styling
+entirely. Merged into a single `class="col-6 field"` and re-swept the
+whole site for any other duplicate-class collisions (none found).
+
+**Files changed:** `css/styles.css`, `about.html`, `contact.html`,
+`quote.html`, `index.html`.
+
+**Verified:** headless-browser check at 390×844 (iPhone width) on
+index.html, quote.html, about.html, contact.html — horizontal overflow is
+0px on all four, zero JS errors, and the specific reported sections
+(How it works cards, pickup-date/company fields) visually confirmed
+stacking correctly with full text visible.
+
+## Phase — World-class feature batch: quick-quote, sticky mobile bar, structured data, tracking timeline, WhatsApp deep-links, image performance
+
+**What changed:**
+
+- **Quick-quote starter (homepage):** a compact Mode/Origin/Destination/
+  Weight form right after the hero that hands off to the real quote form
+  pre-filled via URL query string. Deliberately does **not** compute or
+  display a price — there is no rate engine behind this site, and
+  fabricating one would violate the project's core rule of never
+  inventing facts. It only removes retyping.
+- **Sticky mobile quote bar:** appears once someone scrolls past the
+  first screen, mobile only, hidden on quote.html/thank-you.html/404.html
+  where it would duplicate the page's own CTA.
+- **Contextual WhatsApp links:** every wa.me link site-wide now opens
+  with a pre-filled message matching the page it's on (e.g. Haulage page
+  → "Hi, I'd like a quote for Haulage.") instead of a blank chat.
+- **Tracking timeline rebuilt:** connecting progress line filled up to
+  the current stage, with a pulsing ring on whichever stage is active —
+  same underlying status logic as before, just a real operational look
+  instead of plain dots.
+- **Structured data (JSON-LD):** LocalBusiness schema on the homepage
+  (using only facts already verified in COMPANY-FACTS.md), Service schema
+  on all six service pages, and FAQPage schema generated programmatically
+  from faq.html's actual visible Q&A content — extracted from the live
+  page text rather than hand-typed, so it's guaranteed to match what's
+  displayed.
+- **Image performance:** every logo instance and the About page team
+  photo now has explicit width/height (prevents layout shift) plus
+  loading="lazy" on everything below the fold; the header logo stays
+  eager since it's always immediately visible.
+
+**Files changed:** `index.html`, `quote.html`, `tracking.html`,
+`about.html`, `faq.html`, all six service pages, `css/styles.css`,
+`js/main.js`, plus lazy-loading attributes across all 24 HTML files.
+
+**Verified:**
+- Headless-browser end-to-end test: quick-quote form filled and
+  submitted → correct arrival on quote.html with mode selected and all
+  three fields pre-filled from the URL.
+- Sticky bar confirmed hidden at page load, appears after scrolling,
+  and confirmed completely absent (`display:none`) on desktop viewports.
+- WhatsApp href confirmed carrying the correct pre-filled message on a
+  sample page.
+- All JSON-LD blocks parsed as syntactically valid JSON across every
+  page that has one.
+- Full-site regression: all 24 pages checked in a headless browser
+  (page load + scroll) — zero JavaScript errors on every single page.
+  Tag balance and internal-link checks also re-run clean across the
+  whole site.
+
+## Phase — Cinematic/premium elevation: page transitions, per-service visual chapters, performance, spotlight cards
+
+**What changed:**
+
+- **Cross-document view transitions:** one CSS rule (`@view-transition{
+  navigation: auto; }`) — browsers that support it (Chrome/Edge 126+,
+  Safari 18+) now cross-fade between page navigations instead of a hard
+  cut. Unsupported browsers simply ignore the rule and navigate exactly
+  as before; nothing to fall back to, nothing that can break.
+- **Performance — fonts moved off render-blocking @import:** Google
+  Fonts was loaded via `@import` inside styles.css, which forces the
+  browser to fully fetch the CSS file before it even discovers the font
+  request — an extra serial round-trip on every page. Moved to a
+  `<link>` in each page's `<head>`, preceded by `preconnect` hints for
+  fonts.googleapis.com, fonts.gstatic.com, cdn.tailwindcss.com, and
+  images.unsplash.com. Each page's hero image also gets a
+  `<link rel="preload" fetchpriority="high">` now, so the LCP element
+  starts loading immediately instead of waiting for CSS to parse.
+- **Per-service visual chapters** — previously only Air Freight had a
+  signature animated moment. Added one to each remaining service page,
+  each with its own distinct motif rather than reusing the same effect:
+  - Sea Freight: an animated tide-line wave with a vessel riding the
+    route path.
+  - Haulage: a road line with mile-marker ticks and a truck riding it.
+  - Customs: a document with a scanning line and a stamp/checkmark that
+    settles in — process-themed rather than route-themed, since customs
+    isn't a route.
+  - Door to Door: its existing 5-step list rebuilt into a vertical
+    scroll-driven journey — the connecting line fills and each dot
+    lights up as you scroll through it, verified via headless browser
+    to reach 100% fill with all 5 steps marked reached.
+- **Cursor-spotlight on cards:** a soft glow that follows the mouse
+  behind `.plate`/`.service-tile` cards on hover, desktop only. This is
+  unrelated to the custom cursor removed earlier — the native cursor
+  itself is completely untouched; only the card background responds.
+- **Scroll progress indicator:** thin amber line at the very top of the
+  viewport, fills as you scroll down the page.
+- **Image reveal on scroll:** the About page team photo now wipes in
+  left-to-right (clip-path) instead of a plain fade, reusing the
+  existing reveal system with no new JS.
+
+**Files changed:** `css/styles.css`, `js/main.js`, `sea-freight.html`,
+`haulage.html`, `customs.html`, `door-to-door.html`, `about.html`, plus
+resource hints added to all 24 HTML files.
+
+**Verified:** full headless-browser sweep — all 24 pages zero JS errors.
+Feature-specific checks confirmed with real measured values: scroll
+progress bar moved from 0% to 35.8% on scroll; 15 spotlight cards wired
+on services.html; both Sea Freight and Haulage confirmed with their
+route path present, plane/truck icon opacity at 1, and the SMIL
+`animateMotion` element actually injected; Customs stamp element
+confirmed present; Door to Door journey fill confirmed reaching 100%
+height with all 5 steps marked reached on scroll; About page image-reveal
+element confirmed present; homepage confirmed carrying 4 preconnect
+hints and 1 hero preload.
+
+**Scope note on "section rhythm variation":** not done as a separate
+sweeping pass — the four new visual chapters above already introduce
+real light/dark rhythm breaks and one genuine asymmetric split (Customs'
+text-vs-icon layout), which covers this more honestly than a cosmetic
+padding tweak would have.
+
+## Phase — Dark reading mode, downloadable service sheet, and two corrections
+
+**Corrections to earlier claims in this changelog/conversation — checked
+the actual code before building anything, found these were already done:**
+- Animated stat counters (item #2 from a prior request) were **already
+  fully implemented** — count-up animation on "40+ countries" / "6
+  industries" via IntersectionObserver, plus years-in-service computed
+  live as `new Date().getFullYear() - 2005` so it never goes stale.
+  Nothing needed building here.
+- The 404 page (item #7) was **already** a real illustration, not
+  text-only as previously stated — a drifting jet icon (26s loop) and a
+  slowly crawling dashed route line, both respecting reduced motion.
+  Also nothing needed building.
+
+**What was actually built this phase:**
+
+- **Light/dark reading mode toggle.** Deliberately scoped, not a full
+  theme inversion — the site's dark sections (`.bg-ink`, `.bg-night`,
+  header, footer) are an intentional editorial rhythm per the original
+  brief, and `--color-ink` does double duty as both light-section text
+  color and dark-section background, so it can't be globally flipped
+  without breaking those sections. This toggle re-themes only the plain
+  light surfaces (body background, `.plate` cards, form fields, muted
+  text) into a dark reading surface; sections that are already dark are
+  left completely untouched. A small inline script in `<head>` reads the
+  saved preference from localStorage before first paint, so there's no
+  flash of the wrong theme on load — confirmed via headless browser that
+  `data-theme="dark"` is already set at the `commit` navigation event,
+  before the page finishes loading. Toggle button added to the header on
+  all 23 pages that have a full header (not 404.html).
+- **Downloadable one-page service sheet (PDF):** all six services, the
+  verified "at a glance" facts from COMPANY-FACTS.md, and contact
+  details, built for the trade-show/WhatsApp-attachment use case named
+  when this was proposed. Linked from the Services page hero and the
+  footer on every applicable page.
+
+**Files changed:** `css/styles.css`, `js/main.js`, inline anti-flash
+script + toggle button added to all 24 HTML files, footer service-sheet
+link added to 23 of them, `services.html` hero link, new
+`downloads/first-experts-service-sheet.pdf`.
+
+**Verified:** full headless-browser sweep, zero JS errors across all 24
+pages. Dark mode toggle confirmed present on all 23 applicable pages;
+toggled on about.html and confirmed the actual computed background/text
+colors (`rgb(18,22,31)` / `rgb(232,234,240)`) rather than assuming the
+CSS applied correctly. Persistence confirmed with a real reload — theme
+was already set before the page finished loading, not after. The PDF
+link was fetched (not just checked for presence) and confirmed
+`200 OK` with `application/pdf` content-type. Footer link confirmed
+present on all 23 applicable pages via direct DOM query, not a visual
+guess.
+
+## Phase — Audit pass: fixed a real accessibility gap, closed a real content gap
+
+You asked to check what's actually there before proposing anything new.
+Audited the live codebase directly rather than working from memory — found
+two genuine, concrete gaps and fixed both:
+
+- **Accessibility bug (introduced by the dark mode toggle):** the toggle
+  button had `aria-label` but no `aria-pressed` state, so a screen reader
+  user had no way to know whether dark mode was currently on. Fixed:
+  `aria-pressed` now starts `"false"` in the HTML and flips correctly on
+  click — verified with a headless browser, not assumed: confirmed it
+  reads `false` before the click and `true` immediately after.
+- **Structured data gap:** 8 of 24 pages had JSON-LD (homepage, 6 service
+  pages, FAQ) — the 4 blog posts had none. Added BlogPosting schema to
+  all four, reusing their existing verified titles/descriptions.
+  Deliberately left out `datePublished` since no publish date exists
+  anywhere on the pages to verify — adding one would mean inventing it,
+  which this project doesn't do even for schema markup Google would
+  prefer to see.
+
+**Also audited and confirmed already correct, nothing to fix:** custom
+cursor stayed removed (zero occurrences), all resource hints present on
+every page, sitemap.xml covers all 22 indexable pages (index.html is
+correctly represented as `/`, not `/index.html`), every image has alt
+text, robots.txt is in place and points to the sitemap.
+
+**Files changed:** `js/main.js`, `aria-pressed` attribute added to the
+toggle button on 23 pages, BlogPosting schema added to 4 blog posts.
+
+**Verified:** full headless-browser sweep, zero JS errors across all 24
+pages. JSON-LD re-validated as syntactically correct across every page
+that has any. aria-pressed toggle behavior confirmed with real before/
+after values, not a visual check.
+

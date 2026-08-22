@@ -302,13 +302,28 @@
         const idx = STATUS_STEPS.findIndex(s => s.toLowerCase() === (currentStatus || '').toLowerCase());
         const el = document.getElementById('tr-timeline');
         el.innerHTML = '';
+        el.classList.add('tr-track');
+
+        const lineBg = document.createElement('div');
+        lineBg.className = 'tr-line-bg';
+        el.appendChild(lineBg);
+
+        if (idx >= 0) {
+          const fillPct = (idx / (STATUS_STEPS.length - 1)) * 100;
+          const lineFill = document.createElement('div');
+          lineFill.className = 'tr-line-fill';
+          lineFill.style.width = fillPct + '%';
+          el.appendChild(lineFill);
+        }
+
         STATUS_STEPS.forEach((step, i) => {
           const reached = idx >= 0 && i <= idx;
+          const isCurrent = idx >= 0 && i === idx;
           const wrap = document.createElement('div');
-          wrap.style.cssText = 'flex:1;min-width:110px;padding:6px 10px 6px 0;';
+          wrap.className = 'tr-step' + (reached ? ' is-reached' : '') + (isCurrent ? ' is-current' : '');
           wrap.innerHTML = `
-            <div style="width:10px;height:10px;border-radius:50%;margin-bottom:8px;background:${reached ? 'var(--color-brand)' : 'var(--color-line)'};"></div>
-            <p style="font-family:var(--font-mono);font-size:11px;letter-spacing:.04em;color:${reached ? 'var(--color-ink)' : 'var(--color-muted)'};font-weight:${reached ? '600' : '400'};">${step.toUpperCase()}</p>
+            <span class="tr-dot"></span>
+            <p class="tr-label">${step.toUpperCase()}</p>
           `;
           el.appendChild(wrap);
         });
@@ -435,5 +450,214 @@
       }
     }
   } catch (err) { /* the static path and destination dot still show, just no riding plane */ }
+
+  /* ---------- Contextual WhatsApp pre-filled messages ----------
+     Every wa.me/2347031341072 link on the site (footer, hero CTA) gets a
+     pre-filled message matching the page it's on, so someone tapping
+     WhatsApp from the Haulage page doesn't land in a blank chat having to
+     explain from scratch what they're asking about. Purely additive —
+     if this fails, the links still work exactly as before, just without
+     the pre-filled text. */
+  try {
+    const WA_MESSAGES = {
+      'index.html': "Hi, I'd like to request a shipping quote.",
+      '': "Hi, I'd like to request a shipping quote.",
+      'air-freight.html': "Hi, I'd like a quote for Air Freight.",
+      'sea-freight.html': "Hi, I'd like a quote for Sea Freight.",
+      'door-to-door.html': "Hi, I'd like a quote for Door to Door delivery.",
+      'customs.html': "Hi, I'd like help with Customs Clearance.",
+      'haulage.html': "Hi, I'd like a quote for Haulage.",
+      'ecommerce.html': "Hi, I'd like to talk about E-commerce Logistics.",
+      'routes.html': "Hi, I have a question about one of your shipping routes.",
+      'tracking.html': "Hi, I need help tracking a shipment.",
+      'quote.html': "Hi, I'd like to request a shipping quote.",
+      'contact.html': "Hi, I'd like to get in touch.",
+      'services.html': "Hi, I have a question about your services.",
+      'solutions.html': "Hi, I have a question about your services.",
+      'faq.html': "Hi, I have a question.",
+      'about.html': "Hi, I have a question about First Experts Logistics.",
+    };
+    const path = (window.location.pathname.split('/').pop() || 'index.html');
+    const msg = WA_MESSAGES[path] || "Hi, I have a question about your services.";
+    const encoded = encodeURIComponent(msg);
+    document.querySelectorAll('a[href^="https://wa.me/2347031341072"]').forEach((a) => {
+      const href = a.getAttribute('href');
+      if (href.indexOf('?') === -1) a.setAttribute('href', href + '?text=' + encoded);
+    });
+  } catch (err) { /* WhatsApp links still work, just open to a blank chat */ }
+
+  /* ---------- Sticky mobile quote bar ----------
+     Appears once someone scrolls past the first screen, mobile only (CSS
+     hides it entirely at desktop widths — see .sticky-quote-bar). Not
+     shown on quote.html or thank-you.html, where it would just repeat
+     the page's own primary action. */
+  try {
+    const path = (window.location.pathname.split('/').pop() || 'index.html');
+    if (path !== 'quote.html' && path !== 'thank-you.html' && path !== '404.html') {
+      const waLink = document.querySelector('a[href^="https://wa.me/2347031341072"]');
+      const waHref = waLink ? waLink.getAttribute('href') : 'https://wa.me/2347031341072';
+
+      const bar = document.createElement('div');
+      bar.className = 'sticky-quote-bar';
+      bar.innerHTML = `
+        <a href="quote.html" class="btn btn-primary">Request a Quote</a>
+        <a href="${waHref}" class="btn btn-ghost on-dark" target="_blank" rel="noopener">WhatsApp</a>
+      `;
+      document.body.appendChild(bar);
+
+      let ticking = false;
+      const update = () => {
+        bar.classList.toggle('is-visible', window.scrollY > window.innerHeight * 0.6);
+        ticking = false;
+      };
+      window.addEventListener('scroll', () => {
+        if (!ticking) { requestAnimationFrame(update); ticking = true; }
+      }, { passive: true });
+      update();
+    }
+  } catch (err) { /* the page's own in-content CTAs still work fine without this */ }
+
+  /* ---------- Quick quote starter (index.html) ----------
+     Builds a query string from the compact homepage form and sends the
+     person to the real quote form with those answers already filled in.
+     Deliberately does NOT compute or display any price — there's no rate
+     engine behind this site, and showing a number here would be a fact
+     nobody could stand behind. It only removes retyping. */
+  try {
+    const qqForm = document.getElementById('quick-quote-form');
+    if (qqForm) {
+      qqForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const mode = document.getElementById('qq-mode').value;
+        const origin = document.getElementById('qq-origin').value.trim();
+        const destination = document.getElementById('qq-destination').value.trim();
+        const weight = document.getElementById('qq-weight').value.trim();
+        const params = new URLSearchParams();
+        if (mode) params.set('mode', mode);
+        if (origin) params.set('origin', origin);
+        if (destination) params.set('destination', destination);
+        if (weight) params.set('weight', weight);
+        const qs = params.toString();
+        window.location.href = 'quote.html' + (qs ? '?' + qs : '');
+      });
+    }
+  } catch (err) { /* the quick-quote card just won't redirect; the full quote form on quote.html still works directly */ }
+
+  /* ---------- Quote form pre-fill from URL (quote.html) ----------
+     Reads the query string the homepage quick-quote card builds (or
+     anyone else linking in the same format) and fills the matching
+     fields on the real form. Nothing here is required — the form works
+     completely normally with no query string at all. */
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if ([...params.keys()].length) {
+      const mode = params.get('mode');
+      if (mode) {
+        const radio = document.querySelector(`input[name="Shipping mode"][value="${CSS.escape(mode)}"]`);
+        if (radio) radio.checked = true;
+      }
+      const origin = document.getElementById('origin');
+      if (origin && params.get('origin')) origin.value = params.get('origin');
+      const destination = document.getElementById('destination');
+      if (destination && params.get('destination')) destination.value = params.get('destination');
+      const weight = document.getElementById('weight');
+      if (weight && params.get('weight')) weight.value = params.get('weight');
+    }
+  } catch (err) { /* the form still loads blank and fully usable */ }
+
+  /* ---------- Scroll progress indicator ---------- */
+  try {
+    const bar = document.createElement('div');
+    bar.className = 'scroll-progress';
+    document.body.appendChild(bar);
+    let ticking = false;
+    const update = () => {
+      const h = document.documentElement;
+      const scrolled = h.scrollTop;
+      const max = h.scrollHeight - h.clientHeight;
+      const pct = max > 0 ? (scrolled / max) * 100 : 0;
+      bar.style.width = pct + '%';
+      ticking = false;
+    };
+    window.addEventListener('scroll', () => {
+      if (!ticking) { requestAnimationFrame(update); ticking = true; }
+    }, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  } catch (err) { /* purely decorative; the page scrolls fine without it */ }
+
+  /* ---------- Cursor-spotlight on cards (desktop, fine pointer only) ----------
+     Adds the .spotlight-card class to every .plate / .service-tile on the
+     page and tracks the mouse position relative to each one via CSS
+     custom properties. Touch devices never run this at all — no glow,
+     no cost, and the cards look and work exactly as before. */
+  try {
+    const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (canHover) {
+      document.querySelectorAll('.plate, .service-tile').forEach((card) => {
+        card.classList.add('spotlight-card');
+        card.addEventListener('mousemove', (e) => {
+          const rect = card.getBoundingClientRect();
+          card.style.setProperty('--mx', (e.clientX - rect.left) + 'px');
+          card.style.setProperty('--my', (e.clientY - rect.top) + 'px');
+        });
+      });
+    }
+  } catch (err) { /* cards remain fully usable, just without the hover glow */ }
+
+  /* ---------- Door to Door scroll-driven journey (door-to-door.html only) ----------
+     Fills the connecting line as the container scrolls through the middle
+     of the viewport, lighting up each dot once the fill reaches it.
+     Purely visual — the steps and their text are already fully readable
+     without any of this running. */
+  try {
+    if (!reduceMotion) {
+      const track = document.querySelector('[data-journey]');
+      const fill = document.querySelector('[data-journey-fill]');
+      if (track && fill) {
+        const steps = Array.from(track.querySelectorAll('.journey-step'));
+        let ticking = false;
+        const update = () => {
+          const rect = track.getBoundingClientRect();
+          const vh = window.innerHeight;
+          const progress = Math.max(0, Math.min(1, (vh * 0.75 - rect.top) / rect.height));
+          fill.style.height = (progress * 100) + '%';
+          steps.forEach((s, i) => {
+            const threshold = i / Math.max(1, steps.length - 1);
+            s.classList.toggle('is-reached', progress >= threshold - 0.02);
+          });
+          ticking = false;
+        };
+        window.addEventListener('scroll', () => {
+          if (!ticking) { requestAnimationFrame(update); ticking = true; }
+        }, { passive: true });
+        update();
+      }
+    }
+  } catch (err) { /* the journey list still reads fine as plain static steps */ }
+
+  /* ---------- Light/dark reading mode toggle ----------
+     The <html data-theme> attribute is already set on load by the small
+     inline script in <head> (reads localStorage before first paint, so
+     there's no flash of the wrong theme). This just wires the button to
+     flip it and remember the choice for next time. */
+  try {
+    const toggle = document.querySelector('[data-theme-toggle]');
+    if (toggle) {
+      toggle.setAttribute('aria-pressed', document.documentElement.getAttribute('data-theme') === 'dark' ? 'true' : 'false');
+      toggle.addEventListener('click', () => {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          document.documentElement.removeAttribute('data-theme');
+          toggle.setAttribute('aria-pressed', 'false');
+          try { localStorage.setItem('fe-theme', 'light'); } catch (e) { /* preference just won't persist */ }
+        } else {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          toggle.setAttribute('aria-pressed', 'true');
+          try { localStorage.setItem('fe-theme', 'dark'); } catch (e) { /* preference just won't persist */ }
+        }
+      });
+    }
+  } catch (err) { /* the site still displays correctly in its default light-section styling */ }
 
 })();

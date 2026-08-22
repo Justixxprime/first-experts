@@ -3,7 +3,25 @@
    Tokens → Base → Layout → Components → Motion → Utilities
    ========================================================= */
 
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,340;0,9..144,400;0,9..144,480;0,9..144,600;1,9..144,420;1,9..144,500&family=IBM+Plex+Mono:wght@400;500&display=swap');
+/* Google Fonts moved to a <link> in each page's <head> (with
+   preconnect ahead of it) instead of @import here — @import inside a
+   CSS file is render-blocking behind an extra serial round-trip: the
+   browser has to fully fetch this file first before it even discovers
+   the font request. A <link> in <head> lets the browser discover and
+   start fetching fonts in parallel with everything else. See
+   docs/CHANGELOG.md for the specific pages this changed. */
+
+/* ---- Cross-document view transitions ----
+   One line, applies site-wide: browsers that support the View
+   Transitions API (Chrome/Edge 126+, Safari 18+ at time of writing)
+   automatically cross-fade between same-origin page navigations instead
+   of a hard cut. Browsers that don't support it simply ignore this rule
+   and navigate exactly as they always have — nothing to fall back to,
+   nothing that can break. Respects prefers-reduced-motion automatically:
+   supporting browsers skip the transition when that's set, per spec. */
+@view-transition{
+  navigation: auto;
+}
 
 :root{
   /* ---- Color: sampled from the FE mark (#014BAE) ---- */
@@ -106,6 +124,19 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   padding-inline:var(--gutter);
 }
 .grid-12{ display:grid; grid-template-columns:repeat(12,1fr); gap:clamp(16px,2vw,28px); }
+
+/* Responsive column-span utilities. Mobile-first: full width (stacked)
+   by default, widening to the intended fractional span only once there's
+   real room for it — matching the site's existing 640px breakpoint.
+   Replaces inline grid-column:span N, which had no mobile behavior at all
+   and let two 50%-width fields (or four 25%-width cards) get too narrow
+   for their content on a phone, overflowing or overlapping their
+   neighbor. See CHANGELOG for the specific bugs this fixed. */
+.col-6, .col-3{ grid-column:span 12; }
+@media (min-width:640px){
+  .col-6{ grid-column:span 6; }
+  .col-3{ grid-column:span 3; }
+}
 
 section{ position:relative; }
 .section-pad{ padding-block:clamp(72px,10vw,140px); }
@@ -585,3 +616,223 @@ tr.is-hidden{ display:none; }
 .flight-path-wrap{ width:100%; height:auto; }
 .flight-plane{ transform-origin:center; filter:drop-shadow(0 0 4px rgba(230,162,60,.7)); }
 @media (prefers-reduced-motion: reduce){ .flight-plane{ display:none; } }
+
+/* ---- Sea Freight tide-line motion ---- */
+.tide-line{ animation:tideDrift 7s ease-in-out infinite alternate; }
+@keyframes tideDrift{
+  from{ transform:translateX(-14px); }
+  to{ transform:translateX(14px); }
+}
+@media (prefers-reduced-motion: reduce){ .tide-line{ animation:none; } }
+
+/* ---- Haulage mile-marker motion ---- */
+.mile-marker-line{ animation:mileMarkers 1.6s linear infinite; }
+@keyframes mileMarkers{ to{ stroke-dashoffset:-40; } }
+@media (prefers-reduced-motion: reduce){ .mile-marker-line{ animation:none; } }
+
+/* ---- Customs document-scan + stamp motion ---- */
+.customs-scan-line{ animation:customsScan 2.6s ease-in-out infinite; }
+@keyframes customsScan{
+  0%{ transform:translateY(0); }
+  50%{ transform:translateY(156px); }
+  100%{ transform:translateY(0); }
+}
+.customs-stamp, .customs-check{
+  opacity:0; transform:scale(.4); transform-origin:132px 150px;
+  animation:customsStampIn .5s var(--ease-out) forwards;
+}
+@keyframes customsStampIn{
+  0%{ opacity:0; transform:scale(1.5); }
+  60%{ opacity:1; transform:scale(.85); }
+  100%{ opacity:1; transform:scale(1); }
+}
+@media (prefers-reduced-motion: reduce){
+  .customs-scan-line{ animation:none; }
+  .customs-stamp, .customs-check{ animation:none; opacity:1; transform:scale(1); }
+}
+
+/* ---- Door to Door scroll-driven journey ----
+   A vertical connecting line that fills as you scroll down through the
+   steps, with each dot lighting up once the fill line reaches it — the
+   "scroll progression" treatment named for this page specifically.
+   .journey-line-fill's height is set by JS as a percentage; everything
+   else here is static positioning. */
+.journey-track{ position:relative; padding-left:36px; }
+.journey-line-bg, .journey-line-fill{
+  position:absolute; left:5px; top:8px; width:2px;
+}
+.journey-line-bg{ bottom:8px; background:var(--color-line); }
+.journey-line-fill{ height:0%; background:var(--color-brand); transition:height .1s linear; }
+@media (prefers-reduced-motion: reduce){ .journey-line-fill{ transition:none; } }
+.journey-step{
+  position:relative; padding-block:18px;
+  border-top:1px solid var(--color-line);
+}
+.journey-step:first-child{ border-top:none; }
+.journey-dot{
+  position:absolute; left:-36px; top:24px;
+  width:12px; height:12px; border-radius:50%;
+  background:var(--color-surface); border:2px solid var(--color-line);
+  transition:background .3s var(--ease-out), border-color .3s var(--ease-out);
+}
+.journey-step.is-reached .journey-dot{ background:var(--color-brand); border-color:var(--color-brand); }
+.journey-num{ font-family:var(--font-mono); font-size:14px; color:var(--color-brand); margin-right:14px; }
+.journey-text{ display:flex; align-items:baseline; flex-wrap:wrap; }
+.journey-text p{ display:inline; margin:0; }
+
+/* ---- Image reveal on scroll (clip-path curtain) ----
+   A left-to-right wipe instead of a plain fade, for images that scroll
+   into view later in the page (the hero's own Ken Burns treatment
+   already covers the top-of-page images). Reuses the existing
+   [data-reveal]/.is-visible toggle — no new JS needed. */
+.img-reveal{
+  clip-path:inset(0 100% 0 0);
+  transition:clip-path 1s var(--ease-out);
+}
+[data-reveal].is-visible .img-reveal{ clip-path:inset(0 0 0 0); }
+@media (prefers-reduced-motion: reduce){
+  .img-reveal{ clip-path:none; transition:none; }
+}
+
+/* ---- Sticky mobile quote bar ----
+   Mobile only (hidden entirely at desktop widths), appears once someone
+   has scrolled past the hero, hidden again on quote.html/thank-you.html
+   where it would just duplicate the page's own primary CTA. z-index sits
+   below the mobile-menu overlay (150) so the full-screen nav still covers
+   it correctly when open. */
+.sticky-quote-bar{
+  position:fixed; left:0; right:0; bottom:0; z-index:90;
+  display:flex; gap:10px; padding:10px 14px;
+  padding-bottom:calc(10px + env(safe-area-inset-bottom));
+  background:rgba(10,18,33,.92); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  border-top:1px solid rgba(255,255,255,.12);
+  transform:translateY(100%);
+  transition:transform .35s var(--ease-out);
+}
+.sticky-quote-bar.is-visible{ transform:translateY(0); }
+.sticky-quote-bar a{ flex:1; text-align:center; justify-content:center; white-space:nowrap; }
+.sticky-quote-bar .btn{ padding:13px 14px; font-size:14px; }
+@media (min-width:860px){ .sticky-quote-bar{ display:none; } }
+@media (max-width:859px){ body{ padding-bottom:76px; } }
+
+/* ---- Shipment tracking timeline ----
+   A connecting line behind the dots, filled up to the current stage, with
+   a subtle pulse on whichever stage is active right now — reads as a real
+   operational status view rather than a plain list of words. */
+.tr-track{
+  position:relative; display:flex; justify-content:space-between;
+  border-top:1px solid var(--color-line); border-bottom:1px solid var(--color-line);
+  padding:28px 4px 22px;
+}
+.tr-line-bg, .tr-line-fill{
+  position:absolute; top:32px; left:4px; right:4px; height:2px;
+}
+.tr-line-bg{ background:var(--color-line); }
+.tr-line-fill{
+  background:var(--color-brand); right:auto;
+  transition:width .6s var(--ease-out);
+}
+.tr-step{
+  position:relative; z-index:1; flex:1; display:flex; flex-direction:column;
+  align-items:center; text-align:center; min-width:0; padding-inline:4px;
+}
+.tr-dot{
+  width:12px; height:12px; border-radius:50%; background:var(--color-line);
+  border:2px solid var(--color-surface); margin-bottom:12px;
+  transition:background .4s var(--ease-out);
+}
+.tr-step.is-reached .tr-dot{ background:var(--color-brand); }
+.tr-step.is-current .tr-dot{ position:relative; background:var(--color-amber); }
+.tr-step.is-current .tr-dot::after{
+  content:""; position:absolute; inset:-6px; border-radius:50%;
+  border:2px solid var(--color-amber); animation:trPulse 1.8s ease-out infinite;
+}
+@media (prefers-reduced-motion: reduce){ .tr-step.is-current .tr-dot::after{ animation:none; } }
+@keyframes trPulse{
+  from{ transform:scale(.6); opacity:.9; }
+  to{ transform:scale(1.7); opacity:0; }
+}
+.tr-label{
+  font-family:var(--font-mono); font-size:10.5px; letter-spacing:.04em;
+  color:var(--color-muted); line-height:1.3;
+}
+.tr-step.is-reached .tr-label{ color:var(--color-ink); font-weight:600; }
+@media (max-width:520px){
+  .tr-label{ font-size:9px; }
+}
+
+/* ---- Quick quote starter (homepage) ---- */
+.quick-quote-card{
+  border:1px solid var(--color-line); padding:32px clamp(20px,4vw,40px);
+  background:var(--color-surface-alt);
+}
+
+/* ---- Scroll progress indicator ----
+   Thin line at the very top edge, fills as you read down the page.
+   Sits above the header (z-index) so it's always visible even when the
+   header itself is transparent at the top of a page. */
+.scroll-progress{
+  position:fixed; top:0; left:0; height:2px; width:0%;
+  background:var(--color-amber); z-index:101;
+  transition:width .1s linear;
+}
+@media (prefers-reduced-motion: reduce){ .scroll-progress{ transition:none; } }
+
+/* ---- Cursor-spotlight on dark cards (desktop, fine pointer only) ----
+   A soft glow that follows the mouse behind a card on hover — the
+   native cursor itself is completely untouched, this only affects the
+   card's own background. Position driven by --mx/--my custom properties
+   set via JS on mousemove; falls back to no glow at all if JS doesn't
+   run, since the gradient defaults to transparent. */
+.spotlight-card{
+  position:relative; overflow:hidden;
+}
+.spotlight-card::before{
+  content:""; position:absolute; inset:0; z-index:0; opacity:0;
+  background:radial-gradient(320px circle at var(--mx,50%) var(--my,50%), rgba(230,162,60,.14), transparent 70%);
+  transition:opacity .3s var(--ease-out);
+}
+.spotlight-card:hover::before{ opacity:1; }
+.spotlight-card > *{ position:relative; z-index:1; }
+
+/* ---- Light/dark reading mode ----
+   IMPORTANT — scoped deliberately, not a full theme inversion: this site's
+   light and dark sections (.bg-ink, .bg-night, the header, footer, mobile
+   menu) are an intentional editorial rhythm, not a single uniform surface
+   — inverting them too would fight that design rather than serve it, and
+   --color-ink already does double duty as both "text color on light
+   sections" AND "the background of the darkest sections", so it can't
+   simply be flipped without breaking .bg-ink/.bg-night everywhere. This
+   toggle only re-themes the plain light sections (body background,
+   .plate/.quick-quote-card surfaces, form fields, muted text) into a dark
+   reading surface. Sections that are already dark are left completely
+   alone — they don't need to change. */
+[data-theme="dark"]{
+  --color-surface: #12161f;
+  --color-surface-alt: #1a1f2b;
+  --color-muted: #9aa3b5;
+  --color-line: rgba(255,255,255,.14);
+}
+[data-theme="dark"] body{ color:#E8EAF0; }
+[data-theme="dark"] .tr-step.is-reached .tr-label{ color:#E8EAF0; }
+[data-theme="dark"] .field input,
+[data-theme="dark"] .field select,
+[data-theme="dark"] .field textarea{
+  background:#1a1f2b; color:#E8EAF0; border-color:rgba(255,255,255,.18);
+}
+[data-theme="dark"] .field input::placeholder,
+[data-theme="dark"] .field textarea::placeholder{ color:#6b7590; }
+[data-theme="dark"] .mode-opt span{ background:#1a1f2b; border-color:rgba(255,255,255,.18); color:#E8EAF0; }
+
+/* ---- Theme toggle button ---- */
+.theme-toggle{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:38px; height:38px; border-radius:50%;
+  border:1px solid rgba(255,255,255,.3); background:transparent; color:#fff;
+  cursor:pointer; flex-shrink:0;
+}
+.theme-toggle svg{ width:17px; height:17px; }
+.theme-toggle .icon-moon{ display:block; }
+.theme-toggle .icon-sun{ display:none; }
+[data-theme="dark"] .theme-toggle .icon-moon{ display:none; }
+[data-theme="dark"] .theme-toggle .icon-sun{ display:block; }
