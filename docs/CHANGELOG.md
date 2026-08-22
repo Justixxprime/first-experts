@@ -731,3 +731,48 @@ the fix is a one-line URL swap to a different provider, not a rebuild.
 **Verified:** full 24-page JS error sweep — zero errors. Tag balance
 re-confirmed clean.
 
+## Phase — Universal tracking box: format-detected carrier suggestions
+
+**What changed:** the tracking box now handles more than just First
+Experts' own numbers. Flow is unchanged for a real match — checks the
+company's own Google Sheet first, exactly as before. When a number
+isn't found there, it's now checked against known tracking-number
+formats (UPS, FedEx, DHL Express, S10 international postal, Maersk,
+MSC) and offers a "Track with [Carrier]" link instead of a flat
+"not found."
+
+**Reliability was deliberately calibrated, not uniform** — this matters
+enough to spell out:
+- **FedEx** gets a genuine pre-filled deep link
+  (`fedextrack/?trknbr=...`), because that URL format is corroborated
+  by three independent sources with consistent results.
+- **UPS, DHL Express, and the postal/ocean carriers** link to that
+  carrier's real tracking homepage, without a guessed query parameter.
+  Both UPS and DHL have gone through major site redesigns since most
+  public documentation of their old deep-link formats was written, and
+  their current tracking pages are JS-rendered apps I couldn't reach or
+  verify from this environment (real constraint — sandbox network
+  restrictions, disclosed rather than worked around with a guess). A
+  wrong guessed parameter fails silently, which is worse than an honest
+  "here's the page, paste your number in."
+- Anything unrecognized, or explicitly requested as "not right," falls
+  back to a general multi-carrier lookup (17track.net) plus a WhatsApp
+  option.
+
+**A real bug caught before shipping:** the first version referenced an
+`escapeHtml()` helper that didn't exist yet — would have thrown a
+ReferenceError the first time anyone searched a number not on the
+sheet. Added the helper and specifically tested it against an XSS
+payload (`<script>alert(1)</script>` as a tracking number) — confirmed
+it renders as literal escaped text, not executable markup.
+
+**Files changed:** `js/main.js` only — no HTML/CSS changes needed.
+
+**Verified:** tested via headless browser against real-shaped sample
+numbers for every pattern (UPS, FedEx, DHL, postal S10, Maersk, MSC,
+and deliberately unrecognized input) — each produced the correct
+carrier suggestion or correct fallback. Regression-tested a real
+First-Experts match (FE001) to confirm the existing working flow is
+completely unaffected. XSS escaping verified functionally, not just
+present in the code. Full 24-page site sweep after — zero JS errors.
+

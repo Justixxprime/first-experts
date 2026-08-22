@@ -266,6 +266,44 @@
       const statusBox = document.getElementById('track-status');
       const resultBox = document.getElementById('track-result');
 
+      const escapeHtml = (s) => (s || '').replace(/[&<>"']/g, (c) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[c]));
+
+      /* ---------- Carrier detection for non-First-Experts numbers ----------
+         Format-based, best-effort — a tracking number's shape is a strong
+         hint but never absolute proof (see comments per pattern). FedEx's
+         URL is well-corroborated across multiple independent sources, so
+         that one links straight to a pre-filled result. Every other
+         carrier links to their real tracking homepage rather than
+         guessing a query parameter that might be stale — DHL and UPS have
+         both redesigned their sites since most public documentation of
+         their old deep-link formats was written, and a wrong guess fails
+         silently, which is worse than an honest "paste it here" link. */
+      const detectCarrier = (num) => {
+        const n = (num || '').trim().toUpperCase().replace(/\s+/g, '');
+        const candidates = [];
+        if (/^1Z[0-9A-Z]{16}$/.test(n)) {
+          candidates.push({ name: 'UPS', url: 'https://www.ups.com/track', prefill: false });
+        }
+        if (/^\d{12}$/.test(n) || /^\d{15}$/.test(n) || /^\d{20}$/.test(n)) {
+          candidates.push({ name: 'FedEx', url: `https://www.fedex.com/fedextrack/?trknbr=${encodeURIComponent(n)}`, prefill: true });
+        }
+        if (/^\d{10}$/.test(n)) {
+          candidates.push({ name: 'DHL Express', url: 'https://www.dhl.com/us-en/home/tracking.html', prefill: false });
+        }
+        if (/^[A-Z]{2}\d{9}[A-Z]{2}$/.test(n)) {
+          candidates.push({ name: 'a national postal service (S10 international format)', url: 'https://www.17track.net/en', prefill: false });
+        }
+        if (/^(MAEU|MSCU|MRKU|MSKU)\w{6,10}$/.test(n)) {
+          candidates.push({ name: 'Maersk', url: 'https://www.maersk.com/tracking', prefill: false });
+        }
+        if (/^MEDU\w{6,10}$/.test(n)) {
+          candidates.push({ name: 'MSC', url: 'https://www.msc.com/en/track-a-shipment', prefill: false });
+        }
+        return candidates;
+      };
+
       const parseCSV = (text) => {
         // Small, dependency-free CSV parser that handles quoted fields
         // containing commas — good enough for a Google Sheets export.
@@ -355,7 +393,16 @@
           const match = rows.find(r => (r['tracking number'] || r['trackingnumber'] || '').toLowerCase() === query.toLowerCase());
 
           if (!match) {
-            statusBox.textContent = `Tracking number "${query}" not found. Double-check the number, or contact us and we'll look it up directly.`;
+            const carriers = detectCarrier(query);
+            if (carriers.length) {
+              const links = carriers.map(c => {
+                const label = c.prefill ? `Track with ${c.name} (opens with your number filled in)` : `Track with ${c.name}`;
+                return `<a href="${c.url}" class="text-link" target="_blank" rel="noopener">${label} →</a>`;
+              }).join('<br>');
+              statusBox.innerHTML = `We don't have "${escapeHtml(query)}" on our own sheet — it doesn't look like a First Experts Logistics number. Based on its format, this might be:<br><br>${links}<br><br>Not right? <a href="https://www.17track.net/en" class="text-link" target="_blank" rel="noopener">Try a general multi-carrier lookup →</a> or <a href="https://wa.me/2347031341072" class="text-link">message us on WhatsApp</a>.`;
+            } else {
+              statusBox.innerHTML = `We don't have "${escapeHtml(query)}" on our own sheet, and couldn't recognize the format as a known carrier. <a href="https://www.17track.net/en" class="text-link" target="_blank" rel="noopener">Try a general multi-carrier lookup →</a> or <a href="https://wa.me/2347031341072" class="text-link">message us on WhatsApp</a> with the number.`;
+            }
             return;
           }
 
