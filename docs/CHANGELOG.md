@@ -693,3 +693,41 @@ pages. JSON-LD re-validated as syntactically correct across every page
 that has any. aria-pressed toggle behavior confirmed with real before/
 after values, not a visual check.
 
+## Phase — Item #8: live exchange rates + real-time network pulse (homepage)
+
+**What changed:** a new "live utility strip" on the homepage with two
+independent widgets:
+
+- **Exchange rates (USD → NGN/GBP/EUR):** fetched client-side from
+  Frankfurter (api.frankfurter.dev), an open-source, keyless, ECB-backed
+  rate API. Cached per browser session (sessionStorage) so it isn't
+  re-fetched on every navigation. Explicitly labeled "for guidance only —
+  not a quoted rate," with a link to the source.
+- **Network pulse (shipments in motion / delivered / total tracked):**
+  reuses the exact same Google Sheets CSV already powering the Tracking
+  page — not a new data source. Counts are a genuine tally of rows by
+  status at fetch time; nothing estimated or computed.
+
+**A real testing limitation, disclosed rather than glossed over:** this
+sandbox blocks all outbound cross-origin requests at the network level —
+proven by testing a known-good control domain (images.unsplash.com,
+already used successfully elsewhere on the live site) which failed
+identically to the untested APIs. So real-world CORS behavior for
+Frankfurter could not be 100% verified from here. What was verified
+instead: the API requires no key, returns real data including NGN, and
+its own documentation shows direct browser fetch as the intended usage
+pattern (not a server-proxied one). The widget was also built to fail
+completely silently — via Playwright route interception, confirmed both
+that (a) with the network genuinely blocked, the strip correctly stays
+hidden with zero JS errors, and (b) with a mocked successful response,
+the rendering and counting logic itself is correct (verified exact
+output: 2 in motion / 2 delivered / 4 total from a 4-row mock CSV).
+**Recommend confirming the live rates actually render once this is on
+the real domain** — if Frankfurter's CORS doesn't cooperate in practice,
+the fix is a one-line URL swap to a different provider, not a rebuild.
+
+**Files changed:** `index.html`, `css/styles.css`, `js/main.js`.
+
+**Verified:** full 24-page JS error sweep — zero errors. Tag balance
+re-confirmed clean.
+

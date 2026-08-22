@@ -636,6 +636,117 @@
     }
   } catch (err) { /* the journey list still reads fine as plain static steps */ }
 
+  /* ---------- Live utility strip: exchange rates + network pulse (index.html) ----------
+     Both widgets are independent — either can succeed or fail on its own,
+     and the whole strip only reveals itself once at least one of them has
+     real data to show. Neither ever displays a fabricated number: the FX
+     rates come straight from Frankfurter's live response, and the network
+     pulse is a genuine count of rows in the same tracking sheet already
+     used by the Tracking page — nothing computed or estimated. */
+  try {
+    const strip = document.querySelector('[data-live-strip]');
+    if (strip) {
+      let anySucceeded = false;
+
+      const revealStrip = () => {
+        if (anySucceeded) strip.style.display = '';
+      };
+
+      // --- Exchange rates ---
+      (async () => {
+        try {
+          const cacheKey = 'fe-fx-cache-v1';
+          const cached = sessionStorage.getItem(cacheKey);
+          let rates;
+          if (cached) {
+            rates = JSON.parse(cached);
+          } else {
+            const res = await fetch('https://api.frankfurter.dev/v2/latest?base=USD&symbols=NGN,GBP,EUR', { cache: 'no-store' });
+            if (!res.ok) throw new Error('fx fetch failed');
+            const data = await res.json();
+            rates = data.rates;
+            sessionStorage.setItem(cacheKey, JSON.stringify(rates));
+          }
+          const el = document.getElementById('fx-rates');
+          const fmt = (n) => n.toLocaleString('en-US', { maximumFractionDigits: 2, minimumFractionDigits: 2 });
+          const pairs = [
+            ['USD → NGN', rates.NGN],
+            ['USD → GBP', rates.GBP],
+            ['USD → EUR', rates.EUR],
+          ].filter(([, v]) => typeof v === 'number');
+          if (el && pairs.length) {
+            el.innerHTML = pairs.map(([label, v]) => `
+              <div class="fx-row"><span class="pair">${label}</span><span class="rate">${fmt(v)}</span></div>
+            `).join('');
+            anySucceeded = true;
+            revealStrip();
+          }
+        } catch (err) { /* fx-rates block just stays empty; the other widget can still show */ }
+      })();
+
+      // --- Network pulse (reuses the tracking sheet, not a new data source) ---
+      (async () => {
+        try {
+          const csvUrl = window.TRACKING_SHEET_CSV_URL;
+          if (!csvUrl || csvUrl.startsWith('PASTE_')) return;
+          const res = await fetch(csvUrl, { cache: 'no-store' });
+          if (!res.ok) throw new Error('sheet fetch failed');
+          const text = await res.text();
+
+          const parseCSV = (t) => {
+            const rows = [];
+            let row = [], field = '', inQuotes = false;
+            for (let i = 0; i < t.length; i++) {
+              const c = t[i], next = t[i + 1];
+              if (inQuotes) {
+                if (c === '"' && next === '"') { field += '"'; i++; }
+                else if (c === '"') { inQuotes = false; }
+                else { field += c; }
+              } else {
+                if (c === '"') inQuotes = true;
+                else if (c === ',') { row.push(field); field = ''; }
+                else if (c === '\n' || c === '\r') {
+                  if (c === '\r' && next === '\n') i++;
+                  row.push(field); field = '';
+                  if (row.length > 1 || row[0] !== '') rows.push(row);
+                  row = [];
+                } else { field += c; }
+              }
+            }
+            if (field !== '' || row.length) { row.push(field); rows.push(row); }
+            if (!rows.length) return [];
+            const headers = rows[0].map(h => h.trim().toLowerCase());
+            return rows.slice(1).map(r => {
+              const obj = {};
+              headers.forEach((h, i) => { obj[h] = (r[i] || '').trim(); });
+              return obj;
+            });
+          };
+
+          const rows = parseCSV(text);
+          if (!rows.length) return;
+          const norm = (s) => (s || '').toLowerCase();
+          const inMotion = rows.filter(r => {
+            const s = norm(r['status']);
+            return s && s !== 'delivered';
+          }).length;
+          const delivered = rows.filter(r => norm(r['status']) === 'delivered').length;
+
+          const el = document.getElementById('network-pulse');
+          if (el) {
+            el.innerHTML = `
+              <div class="pulse-stat"><span class="num"><span class="pulse-dot"></span>${inMotion}</span><span class="label">Shipments in motion</span></div>
+              <div class="pulse-stat"><span class="num">${delivered}</span><span class="label">Delivered</span></div>
+              <div class="pulse-stat"><span class="num">${rows.length}</span><span class="label">Total tracked</span></div>
+            `;
+            anySucceeded = true;
+            revealStrip();
+          }
+        } catch (err) { /* network-pulse block just stays empty; the other widget can still show */ }
+      })();
+    }
+  } catch (err) { /* the live strip section stays hidden; everything else on the page is unaffected */ }
+
   /* ---------- Light/dark reading mode toggle ----------
      The <html data-theme> attribute is already set on load by the small
      inline script in <head> (reads localStorage before first paint, so
